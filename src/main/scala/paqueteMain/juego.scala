@@ -65,6 +65,10 @@ object sudoku {
         columnas(j) = columna
       }
 
+      // copio las referencias a los sectores
+      i = 0
+      j = 0
+      
     }
 
 
