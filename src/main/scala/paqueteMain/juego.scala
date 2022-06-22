@@ -113,7 +113,6 @@ object sudoku {
       }
     }
 
-
     //
     def comprobarVictoria(): Boolean = {
       for (i <- 0 to 8; j <- 0 to 8) {
@@ -166,6 +165,12 @@ object sudoku {
      */
     def inicializarTablero(): Unit = {
       val rand = scala.util.Random
+      val tableroAux: Array[Array[Byte]] = Array[Array[Byte]](9)(9)
+      for (i <- tableroAux.indices) {
+        for (j <- tableroAux(i).indices) {
+          tableroAux(i)(j) = 511.toByte
+        }
+      }
 
       def generar10NumsRandoms(): Array[Int] = {
         val nums: Array[Int] = Array[Int](10)
@@ -189,33 +194,67 @@ object sudoku {
         numsAux
       }
 
-      // metodo aux para "inicializarTablero"
-      def insertarNumero(tablero: Array[Array[Array[Int]]], num: Int) = {
+      // metodo aux para "inicializarTablero" (inserta num en posicion i, j)
+      def insertarNumero(i: Int, j: Int) = {
 
 
-        def actualizarFila(): Unit = {
-          for (i <- tablero.indices) { // recorro cada casilla
+        // elijo un numero random
+        var valido = false
+        var numRandom: Int = rand.nextInt(9) + 1 // inicializo numRandom con un numero entre 1 y 9
+        var mascara = (scala.math.pow(2, numRandom - 1)).asInstanceOf[Int].toByte
+        if (!valido) {
+          if ((tableroAux(i)(j) & mascara) != 0) { // si la mascara es igual a 0, es que el numero no esta disponible
+            valido = true
+          }
+          if ((mascara & 1) == 1) { // es impar
+            mascara >>= 1
+            mascara += 256.toByte // recoloco el bit que se iba a perder a la izq del tod0
+          } else { // es par
+            mascara >>= 1
+          }
+          casillas(i)(j) = numRandom
+        }
+        // tengo un numero valido para colocar
 
+
+        def actualizarFila(fila: Int, num: Int): Unit = {
+          for (j <- tableroAux(fila).indices) { // recorro la fila pedida
+            // elimino 'num' del byte SOLO si esta
+            if ((tableroAux(fila)(j) & num.toByte) == num.toByte) {
+              tableroAux(fila)(j) -= scala.math.pow(2, num - 1).toByte
+            }
           }
         }
 
-        def actualizarColumna(): Unit = {
-
+        def actualizarColumna(columna: Int, num: Int): Unit = {
+          for (i <- tableroAux.indices) { // recorro la columna pedida
+            // elimino 'num' del byte SOLO si esta
+            if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
+              tableroAux(i)(columna) -= scala.math.pow(2, num - 1).toByte
+            }
+          }
         }
 
-        def actualizarSector(): Unit = {
-
+        def actualizarSector(sector: Int, num: Int): Unit = {
+          for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
+            for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+              if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
+                tableroAux(i)(j) -= scala.math.pow(2, num - 1).toByte
+              }
+            }
+          }
         }
       }
 
-      // me aseguro que el tablero esta populado con nulls
+      // me aseguro que los tableros estan populados con nulls
       for (i <- casillas.indices) {
         for (j <- casillas(i).indices) {
           casillas(i)(j) = null
+          casillasJugador(i)(j) = null
         }
       }
       // creo un tablero auxiliar
-      val tableroAux: Array[Array[Array[Int]]] = Array[Array[Array[Int]]](9)(9)(9)
+
       for (i <- tableroAux.indices) {
         for (j <- tableroAux(i).indices) {
           for (k <- tableroAux(i)(j).indices) { // cada casilla es un array [1 - 9]
@@ -224,29 +263,7 @@ object sudoku {
         }
       }
 
-      // populo los 3 sectores diagonales
-      val diagonales: Array[Array[Int]] = Array(
-        generar10NumsRandoms(),
-        generar10NumsRandoms(),
-        generar10NumsRandoms())
-
-      for (sectorNum <- 0 to 2) { // lo hago para los 3 sectores
-        for (i <- 0 to 2) { // recorro las 3 filas
-          for (j <- 0 to 2) { // recorro las 3 columnas
-            casillas(i)(j) = diagonales(sectorNum)(i * 3 + j)
-          }
-        }
-      }
-
-      // elimino de tableroAux los sectores diagonales generados en casillas,
-      // dejando solo un array de un int
-      for (i <- 0 until 9) { // recorro filas
-        for (j <- 0 until 9) { // recorro columnas
-          tableroAux(i)(j) = Array(casillas(i)(j).clone())
-        }
-      }
     }
-
 
 
   }
