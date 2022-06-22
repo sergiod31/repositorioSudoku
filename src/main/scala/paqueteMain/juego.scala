@@ -172,36 +172,41 @@ object sudoku {
         }
       }
 
-      def generar10NumsRandoms(): Array[Int] = {
-        val nums: Array[Int] = Array[Int](10)
-        var numsAux: Array[Int] = Array[Int](10)
-        for (x <- numsAux.indices) { // genero un array de length 10, con ints de 1 a 9
-          numsAux(x) = x + 1
-        }
-        for (x <- nums.indices) {
-          val posAle: Int = rand.nextInt(numsAux.length)
-          nums(x) = numsAux(posAle)
-          val arrayAux: Array[Int] = Array[Int](numsAux.length - 1)
-          var ite: Int = 0
-          for (i <- numsAux.indices) { // elimino el numero utilizado
-            if (i != posAle) {
-              arrayAux(ite) = numsAux(i)
-              ite += 1
-            }
+      def actualizarFila(fila: Int, num: Int): Unit = {
+        for (j <- tableroAux(fila).indices) { // recorro la fila pedida
+          // elimino 'num' del byte SOLO si esta
+          if ((tableroAux(fila)(j) & num.toByte) == num.toByte) {
+            tableroAux(fila)(j) -= scala.math.pow(2, num - 1).toByte
           }
-          numsAux = arrayAux
         }
-        numsAux
       }
 
-      // metodo aux para "inicializarTablero" (inserta num en posicion i, j)
-      def insertarNumero(i: Int, j: Int) = {
+      def actualizarColumna(columna: Int, num: Int): Unit = {
+        for (i <- tableroAux.indices) { // recorro la columna pedida
+          // elimino 'num' del byte SOLO si esta
+          if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
+            tableroAux(i)(columna) -= scala.math.pow(2, num - 1).toByte
+          }
+        }
+      }
 
+      def actualizarSector(sector: Int, num: Int): Unit = {
+        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
+          for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+            if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
+              tableroAux(i)(j) -= scala.math.pow(2, num - 1).toByte
+            }
+          }
+        }
+      }
 
+      def inicializarCasilla(i: Int, j: Int) = {
         // elijo un numero random
         var valido = false
-        var numRandom: Int = rand.nextInt(9) + 1 // inicializo numRandom con un numero entre 1 y 9
-        var mascara = (scala.math.pow(2, numRandom - 1)).asInstanceOf[Int].toByte
+
+        // inicializo un byte con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
+        // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
+        var mascara = (scala.math.pow(2, rand.nextInt(9))).asInstanceOf[Int].toByte
         if (!valido) {
           if ((tableroAux(i)(j) & mascara) != 0) { // si la mascara es igual a 0, es que el numero no esta disponible
             valido = true
@@ -212,60 +217,49 @@ object sudoku {
           } else { // es par
             mascara >>= 1
           }
-          casillas(i)(j) = numRandom
         }
         // tengo un numero valido para colocar
+        var numero: Int = mascara.asInstanceOf[Int]
+        casillas(i)(j) = numero
 
-
-        def actualizarFila(fila: Int, num: Int): Unit = {
-          for (j <- tableroAux(fila).indices) { // recorro la fila pedida
-            // elimino 'num' del byte SOLO si esta
-            if ((tableroAux(fila)(j) & num.toByte) == num.toByte) {
-              tableroAux(fila)(j) -= scala.math.pow(2, num - 1).toByte
-            }
-          }
-        }
-
-        def actualizarColumna(columna: Int, num: Int): Unit = {
-          for (i <- tableroAux.indices) { // recorro la columna pedida
-            // elimino 'num' del byte SOLO si esta
-            if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
-              tableroAux(i)(columna) -= scala.math.pow(2, num - 1).toByte
-            }
-          }
-        }
-
-        def actualizarSector(sector: Int, num: Int): Unit = {
-          for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
-            for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
-              if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
-                tableroAux(i)(j) -= scala.math.pow(2, num - 1).toByte
-              }
-            }
-          }
-        }
+        // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
+        actualizarFila(i, numero)
+        actualizarColumna(j, numero)
+        val sector = (i / 3) + (j / 3 * 3)
+        actualizarSector(sector, numero)
       }
 
-      // me aseguro que los tableros estan populados con nulls
+
       for (i <- casillas.indices) {
         for (j <- casillas(i).indices) {
-          casillas(i)(j) = null
-          casillasJugador(i)(j) = null
-        }
-      }
-      // creo un tablero auxiliar
-
-      for (i <- tableroAux.indices) {
-        for (j <- tableroAux(i).indices) {
-          for (k <- tableroAux(i)(j).indices) { // cada casilla es un array [1 - 9]
-            tableroAux(i)(j)(k) = k + 1
-          }
+          inicializarCasilla(i, j)
         }
       }
 
     }
 
+    def imprimirTablero(tablero:Array[Array[Int]]): Unit = {
+      println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
+      println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(1)(0)}  │ ${tablero(1)(1)}  │ ${tablero(1)(2)}  │ ${tablero(1)(3)}  │ ${tablero(1)(4)}  │ ${tablero(1)(5)}  │  ${tablero(1)(6)} │ ${tablero(1)(7)}  │ ${tablero(1)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(2)(0)}  │ ${tablero(2)(1)}  │ ${tablero(2)(2)}  │ ${tablero(2)(3)}  │ ${tablero(2)(4)}  │ ${tablero(2)(5)}  │  ${tablero(2)(6)} │ ${tablero(2)(7)}  │ ${tablero(2)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(3)(0)}  │ ${tablero(3)(1)}  │ ${tablero(3)(2)}  │ ${tablero(3)(3)}  │ ${tablero(3)(4)}  │ ${tablero(3)(5)}  │  ${tablero(3)(6)} │ ${tablero(3)(7)}  │ ${tablero(3)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(4)(0)}  │ ${tablero(4)(1)}  │ ${tablero(4)(2)}  │ ${tablero(4)(3)}  │ ${tablero(4)(4)}  │ ${tablero(4)(5)}  │  ${tablero(4)(6)} │ ${tablero(4)(7)}  │ ${tablero(4)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(5)(0)}  │ ${tablero(5)(1)}  │ ${tablero(5)(2)}  │ ${tablero(5)(3)}  │ ${tablero(5)(4)}  │ ${tablero(5)(5)}  │  ${tablero(5)(6)} │ ${tablero(5)(7)}  │ ${tablero(5)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(6)(0)}  │ ${tablero(6)(1)}  │ ${tablero(6)(2)}  │ ${tablero(6)(3)}  │ ${tablero(6)(4)}  │ ${tablero(6)(5)}  │  ${tablero(6)(6)} │ ${tablero(6)(7)}  │ ${tablero(6)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(7)(0)}  │ ${tablero(7)(1)}  │ ${tablero(7)(2)}  │ ${tablero(7)(3)}  │ ${tablero(7)(4)}  │ ${tablero(7)(5)}  │  ${tablero(7)(6)} │ ${tablero(7)(7)}  │ ${tablero(7)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
+      println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
 
+    }
   }
 
 
