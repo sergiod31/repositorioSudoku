@@ -13,6 +13,10 @@ object sudoku {
       .appName("prueba")
       .getOrCreate();
 
+    var tablero = new Tablero
+
+    tablero.inicializarTablero()
+    tablero.imprimirTablero(tablero.casillas)
 
   }
 
@@ -200,7 +204,7 @@ object sudoku {
         }
       }
 
-      def inicializarCasilla(i: Int, j: Int) = {
+      def inicializarCasilla(i: Int, j: Int): Unit = {
         // elijo un numero random
         var valido = false
 
@@ -238,7 +242,7 @@ object sudoku {
 
     }
 
-    def imprimirTablero(tablero:Array[Array[Int]]): Unit = {
+    def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
       println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
       println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
       println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
@@ -258,7 +262,6 @@ object sudoku {
       println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
       println(s"│ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
       println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
-
     }
   }
 
