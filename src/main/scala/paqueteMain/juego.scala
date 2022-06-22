@@ -225,21 +225,29 @@ object sudoku {
       }
 
       // populo los 3 sectores diagonales
-
       val diagonales: Array[Array[Int]] = Array(
         generar10NumsRandoms(),
         generar10NumsRandoms(),
         generar10NumsRandoms())
 
-      var ite: Int = 0
-      for (sectorNum <- 0 to 2) {
-        for (i <- 0 to 2) {
-          for (j <- 0 to 2) {
-            casillas(i)(j) =
+      for (sectorNum <- 0 to 2) { // lo hago para los 3 sectores
+        for (i <- 0 to 2) { // recorro las 3 filas
+          for (j <- 0 to 2) { // recorro las 3 columnas
+            casillas(i)(j) = diagonales(sectorNum)(i * 3 + j)
           }
         }
       }
+
+      // elimino de tableroAux los sectores diagonales generados en casillas,
+      // dejando solo un array de un int
+      for (i <- 0 until 9) { // recorro filas
+        for (j <- 0 until 9) { // recorro columnas
+          tableroAux(i)(j) = Array(casillas(i)(j).clone())
+        }
+      }
     }
+
+
 
   }
 
