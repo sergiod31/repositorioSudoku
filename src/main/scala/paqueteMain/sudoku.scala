@@ -16,7 +16,7 @@ object sudoku {
     var tablero = new Tablero
 
     tablero.inicializarTableroTest()
-   // tablero.imprimirTablero(tablero.casillas)
+    // tablero.imprimirTablero(tablero.casillas)
 
   }
 
@@ -48,12 +48,12 @@ object sudoku {
     //
     inicializarVariables()
 
-    def deByteAInt(num: Byte): Int = {
+    def deByteAInt(num: Int): Int = {
       //  000 100 000 -> 6
       var numInt: Int = 1
       var numByte = num
       while (numByte != 1) {
-        numByte = (numByte >> 1).toByte
+        numByte >>= 1
         numInt += 1
       }
       numInt
@@ -272,25 +272,84 @@ object sudoku {
     }
 
     def inicializarTableroTest(): Unit = {
+
+
       val rand = scala.util.Random
-      val tableroAux: Array[Array[Byte]] = Array.ofDim[Byte](9, 9)
+      val tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
 
       // relleno tablero aux de '111 111 111'
       for (i <- tableroAux.indices) {
         for (j <- tableroAux(i).indices) {
-          tableroAux(i)(j) = 511.toByte
+          tableroAux(i)(j) = 511
+        }
+      }
+      def actualizarFila(fila: Int, num: Int): Unit = {
+        for (j <- tableroAux(fila).indices) { // recorro la fila pedida
+          // elimino 'num' del byte SOLO si esta
+          tableroAux(fila)(j) = (tableroAux(fila)(j) & ~(scala.math.pow(2, num - 1).toByte)).toByte
         }
       }
 
-
-      val t: Array[Array[Int]] = Array.ofDim[Int](9, 9)
-      for (i <- t.indices) {
-        for (j <- t(i).indices) {
-          t(i)(j) = tableroAux(i)(j).asInstanceOf[Int]
+      def actualizarColumna(columna: Int, num: Int): Unit = {
+        for (i <- tableroAux.indices) { // recorro la columna pedida
+          // elimino 'num' del byte SOLO si esta
+          if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
+            tableroAux(i)(columna) = (tableroAux(i)(columna).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
+          }
         }
       }
-      imprimirTablero(t)
+
+      def actualizarSector(sector: Int, num: Int): Unit = {
+        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
+          for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+            if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
+              tableroAux(i)(j) = (tableroAux(i)(j).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
+            }
+          }
+        }
+      }
+
+      def inicializarCasilla(i: Int, j: Int): Unit = {
+        // inicializo un byte con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
+        // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
+        var mascara = scala.math.pow(2, rand.nextInt(9)).asInstanceOf[Int]
+        println(s"Mascara: ${mascara}")
+        var valido = false
+        while (!valido) {
+          if ((tableroAux(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
+            valido = true
+            tableroAux(i)(j) = mascara
+          } else {
+            if ((mascara & 1) == 1) { // es impar
+              mascara >>= 1
+              mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
+            } else { // es par
+              mascara >>= 1
+            }
+          }
+
+        }
+        // tengo un numero valido para colocar
+        casillas(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
+
+        // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
+        var numero:Int =
+        actualizarFila(i, numero)
+        actualizarColumna(j, numero)
+        val sector = (i / 3) + (j / 3 * 3)
+        actualizarSector(sector, numero)
+      }
+
+
+      imprimirTablero(tableroAux)
       println("\n===========================================\n")
+
+      inicializarCasilla(0, 0)
+
+
+      imprimirTablero(tableroAux)
+
+      println((6 & 2).toBinaryString)
     }
 
 
