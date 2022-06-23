@@ -15,8 +15,8 @@ object sudoku {
 
     var tablero = new Tablero
 
-    tablero.inicializarTablero()
-    tablero.imprimirTablero(tablero.casillas)
+    tablero.inicializarTableroTest()
+   // tablero.imprimirTablero(tablero.casillas)
 
   }
 
@@ -32,24 +32,40 @@ object sudoku {
     //      └────┴────┴────┘
     //
     //  casillas solucion
-    val casillas: Array[Array[Int]] = Array[Array[Int]](9)(9)
+    val casillas: Array[Array[Int]] = Array.ofDim[Int](9, 9)
     //
     //                 primero fila, luego columna
-    val sectores: Array[Array[Array[Int]]] = Array[Array[Array[Int]]](9)(3)(3)
-    val filas: Array[Array[Int]] = Array[Array[Int]](9)(9)
-    val columnas: Array[Array[Int]] = Array[Array[Int]](9)(9)
+    val sectores: Array[Array[Array[Int]]] = Array.ofDim[Int](9, 3, 3)
+    val filas: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    val columnas: Array[Array[Int]] = Array.ofDim[Int](9, 9)
     //
     //  casillas para el jugador
-    val casillasJugador: Array[Array[Int]] = Array[Array[Int]](9)(9)
+    val casillasJugador: Array[Array[Int]] = Array.ofDim[Int](9, 9)
     //
-    val sectoresJugador: Array[Array[Array[Int]]] = Array[Array[Array[Int]]](9)(3)(3)
-    val filasJugador: Array[Array[Int]] = Array[Array[Int]](9)(9)
-    val columnasJugador: Array[Array[Int]] = Array[Array[Int]](9)(9)
+    val sectoresJugador: Array[Array[Array[Int]]] = Array.ofDim[Int](9, 3, 3)
+    val filasJugador: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    val columnasJugador: Array[Array[Int]] = Array.ofDim[Int](9, 9)
     //
     inicializarVariables()
 
+    def deByteAInt(num: Byte): Int = {
+      //  000 100 000 -> 6
+      var numInt: Int = 1
+      var numByte = num
+      while (numByte != 1) {
+        numByte = (numByte >> 1).toByte
+        numInt += 1
+      }
+      numInt
+    }
 
+    /*
+        def deIntAByte(num: Int): Byte = {
+
+        }
+    */
     def inicializarVariables(): Unit = {
+      /*
       var i: Int = 0
       var j: Int = 0
       //
@@ -60,21 +76,20 @@ object sudoku {
       })
 
       // copio las referencias a las columnas
-      i = 0
-      j = 0
-      for (j <- columnas.indices) {
+      for (c <- columnas.indices) {
+        println(s"entra, c: ${c}")
         val columna: Array[Int] = Array[Int](9)
-        for (i <- casillas.indices) {
-          columna(i) = casillas(j)(i)
+        for (f <- casillas.indices) {
+          columna(f) = casillas(f)(c)
         }
-        columnas(j) = columna
+        columnas(c) = columna
       }
 
       // copio las referencias a los sectores
       i = 0
       j = 0
       for (k <- sectores.indices) { // recorro los sectores
-        val auxSector: Array[Array[Int]] = Array[Array[Int]](3)(3)
+        val auxSector: Array[Array[Int]] = Array.ofDim[Int](3, 3)
         for (j <- sectores(k).indices) { // recorro las filas
           val auxFila: Array[Int] = Array[Int](3)
           for (i <- sectores(k)(j).indices) { // recorro las casillas
@@ -84,6 +99,7 @@ object sudoku {
         }
         sectores(k) = auxSector // copio el sector
       }
+
 
       filas.foreach(_ => {
         filasJugador(i) = casillasJugador(i)
@@ -105,7 +121,7 @@ object sudoku {
       i = 0
       j = 0
       for (k <- sectoresJugador.indices) { // recorro los sectores
-        val auxSector: Array[Array[Int]] = Array[Array[Int]](3)(3)
+        val auxSector: Array[Array[Int]] = Array.ofDim[Int](3, 3)
         for (j <- sectoresJugador(k).indices) { // recorro las filas
           val auxFila: Array[Int] = Array[Int](3)
           for (i <- sectoresJugador(k)(j).indices) { // recorro las casillas
@@ -115,6 +131,7 @@ object sudoku {
         }
         sectoresJugador(k) = auxSector // copio el sector
       }
+      */
     }
 
     //
@@ -169,19 +186,20 @@ object sudoku {
      */
     def inicializarTablero(): Unit = {
       val rand = scala.util.Random
-      val tableroAux: Array[Array[Byte]] = Array[Array[Byte]](9)(9)
+      val tableroAux: Array[Array[Byte]] = Array.ofDim[Byte](9, 9)
+
+      // relleno tablero aux de '111 111 111'
       for (i <- tableroAux.indices) {
         for (j <- tableroAux(i).indices) {
           tableroAux(i)(j) = 511.toByte
         }
       }
 
+
       def actualizarFila(fila: Int, num: Int): Unit = {
         for (j <- tableroAux(fila).indices) { // recorro la fila pedida
           // elimino 'num' del byte SOLO si esta
-          if ((tableroAux(fila)(j) & num.toByte) == num.toByte) {
-            tableroAux(fila)(j) -= scala.math.pow(2, num - 1).toByte
-          }
+          tableroAux(fila)(j) = (tableroAux(fila)(j) & ~(scala.math.pow(2, num - 1).toByte)).toByte
         }
       }
 
@@ -189,7 +207,7 @@ object sudoku {
         for (i <- tableroAux.indices) { // recorro la columna pedida
           // elimino 'num' del byte SOLO si esta
           if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
-            tableroAux(i)(columna) -= scala.math.pow(2, num - 1).toByte
+            tableroAux(i)(columna) = (tableroAux(i)(columna).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
           }
         }
       }
@@ -198,29 +216,30 @@ object sudoku {
         for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
           for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
             if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
-              tableroAux(i)(j) -= scala.math.pow(2, num - 1).toByte
+              tableroAux(i)(j) = (tableroAux(i)(j).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
             }
           }
         }
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
-        // elijo un numero random
-        var valido = false
-
         // inicializo un byte con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
         // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
         var mascara = (scala.math.pow(2, rand.nextInt(9))).asInstanceOf[Int].toByte
+
+        var valido = false
         if (!valido) {
-          if ((tableroAux(i)(j) & mascara) != 0) { // si la mascara es igual a 0, es que el numero no esta disponible
+          if ((tableroAux(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
             valido = true
+          } else {
+            if ((mascara & 1) == 1) { // es impar
+              mascara = (mascara >> 1).toByte
+              mascara = (mascara | 256).toByte // recoloco el bit que se iba a perder a la izq del tod0
+            } else { // es par
+              mascara = (mascara >> 1).toByte
+            }
           }
-          if ((mascara & 1) == 1) { // es impar
-            mascara >>= 1
-            mascara += 256.toByte // recoloco el bit que se iba a perder a la izq del tod0
-          } else { // es par
-            mascara >>= 1
-          }
+
         }
         // tengo un numero valido para colocar
         var numero: Int = mascara.asInstanceOf[Int]
@@ -237,10 +256,43 @@ object sudoku {
       for (i <- casillas.indices) {
         for (j <- casillas(i).indices) {
           inicializarCasilla(i, j)
+
+
+          val t: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+          for (i <- t.indices) {
+            for (j <- t(i).indices) {
+              t(i)(j) = tableroAux(i)(j).asInstanceOf[Int]
+            }
+          }
+          imprimirTablero(t)
+          println("\n===========================================\n")
         }
       }
 
     }
+
+    def inicializarTableroTest(): Unit = {
+      val rand = scala.util.Random
+      val tableroAux: Array[Array[Byte]] = Array.ofDim[Byte](9, 9)
+
+      // relleno tablero aux de '111 111 111'
+      for (i <- tableroAux.indices) {
+        for (j <- tableroAux(i).indices) {
+          tableroAux(i)(j) = 511.toByte
+        }
+      }
+
+
+      val t: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+      for (i <- t.indices) {
+        for (j <- t(i).indices) {
+          t(i)(j) = tableroAux(i)(j).asInstanceOf[Int]
+        }
+      }
+      imprimirTablero(t)
+      println("\n===========================================\n")
+    }
+
 
     def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
       println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
