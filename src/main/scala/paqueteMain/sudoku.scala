@@ -59,11 +59,11 @@ object sudoku {
       numInt
     }
 
-    /*
-        def deIntAByte(num: Int): Byte = {
+    def deIntAByte(num: Int): Int = {
+      //  6 -> 000 100 000
+      scala.math.pow(2, num - 1).asInstanceOf[Int]
+    }
 
-        }
-    */
     def inicializarVariables(): Unit = {
       /*
       var i: Int = 0
@@ -283,30 +283,35 @@ object sudoku {
           tableroAux(i)(j) = 511
         }
       }
-      def actualizarFila(fila: Int, num: Int): Unit = {
-        for (j <- tableroAux(fila).indices) { // recorro la fila pedida
-          // elimino 'num' del byte SOLO si esta
-          tableroAux(fila)(j) = (tableroAux(fila)(j) & ~(scala.math.pow(2, num - 1).toByte)).toByte
-        }
-      }
 
-      def actualizarColumna(columna: Int, num: Int): Unit = {
-        for (i <- tableroAux.indices) { // recorro la columna pedida
-          // elimino 'num' del byte SOLO si esta
-          if ((tableroAux(i)(columna) & num.toByte) == num.toByte) {
-            tableroAux(i)(columna) = (tableroAux(i)(columna).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
+      def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int): Unit = {
+        // actualizo la fila
+        for (j <- tableroAux(fila).indices) { // recorro la fila pedida
+          // me salto la casilla objetivo original
+          if (j != columna) {
+            tableroAux(fila)(j) -= num
           }
         }
-      }
+        // actualizo la columna
+        for (i <- tableroAux.indices) { // recorro la columna pedida
+          // me salto la casilla objetivo original
+          if (i != fila) {
+            tableroAux(i)(columna) -= num
+          }
+        }
 
-      def actualizarSector(sector: Int, num: Int): Unit = {
+        // actualizo el sector
+        // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
+        val sector: Int = getSector(fila, columna)
         for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
           for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
-            if ((tableroAux(i)(j) & num.toByte) == num.toByte) {
-              tableroAux(i)(j) = (tableroAux(i)(j).asInstanceOf[Int] - scala.math.pow(2, num - 1)).toByte
+            if (i != fila && j != columna) {
+              tableroAux(i)(j) -= num
+
             }
           }
         }
+
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
@@ -333,11 +338,9 @@ object sudoku {
         casillas(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
 
         // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
-        var numero:Int =
-        actualizarFila(i, numero)
-        actualizarColumna(j, numero)
-        val sector = (i / 3) + (j / 3 * 3)
-        actualizarSector(sector, numero)
+        //val numero: Int = deByteAInt(mascara)
+        val numero: Int = (mascara)
+        actualizarFilaColumnaYSector(i, j, numero)
       }
 
 
@@ -346,10 +349,12 @@ object sudoku {
 
       inicializarCasilla(0, 0)
 
+      imprimirTablero(tableroAux)
+
+      inicializarCasilla(0, 1)
 
       imprimirTablero(tableroAux)
 
-      println((6 & 2).toBinaryString)
     }
 
 
