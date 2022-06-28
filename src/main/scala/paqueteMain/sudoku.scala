@@ -16,7 +16,7 @@ object sudoku {
     var tablero = new Tablero
 
     tablero.inicializarTablero()
-    tablero.imprimirTablero(tablero.casillas)
+    // tablero.imprimirTablero(tablero.casillas)
 
   }
 
@@ -52,76 +52,6 @@ object sudoku {
     def deIntAByte(num: Int): Int = {
       //  6 -> 000 100 000
       scala.math.pow(2, num - 1).asInstanceOf[Int]
-    }
-
-    def inicializarVariables(): Unit = {
-      /*
-      var i: Int = 0
-      var j: Int = 0
-      //
-      // copio las referencias a las filas
-      filas.foreach(_ => {
-        filas(i) = casillas(i)
-        i += 1
-      })
-
-      // copio las referencias a las columnas
-      for (c <- columnas.indices) {
-        println(s"entra, c: ${c}")
-        val columna: Array[Int] = Array[Int](9)
-        for (f <- casillas.indices) {
-          columna(f) = casillas(f)(c)
-        }
-        columnas(c) = columna
-      }
-
-      // copio las referencias a los sectores
-      i = 0
-      j = 0
-      for (k <- sectores.indices) { // recorro los sectores
-        val auxSector: Array[Array[Int]] = Array.ofDim[Int](3, 3)
-        for (j <- sectores(k).indices) { // recorro las filas
-          val auxFila: Array[Int] = Array[Int](3)
-          for (i <- sectores(k)(j).indices) { // recorro las casillas
-            auxFila(i) = casillas(i)(j) // copio la casilla
-          }
-          auxSector(j) = auxFila // copio la fila
-        }
-        sectores(k) = auxSector // copio el sector
-      }
-
-
-      filas.foreach(_ => {
-        filasJugador(i) = casillasJugador(i)
-        i += 1
-      })
-
-      // copio las referencias a las columnas
-      i = 0
-      j = 0
-      for (j <- columnasJugador.indices) {
-        val columna: Array[Int] = Array[Int](9)
-        for (i <- casillasJugador.indices) {
-          columna(i) = casillasJugador(j)(i)
-        }
-        columnasJugador(j) = columna
-      }
-
-      // copio las referencias a los sectores
-      i = 0
-      j = 0
-      for (k <- sectoresJugador.indices) { // recorro los sectores
-        val auxSector: Array[Array[Int]] = Array.ofDim[Int](3, 3)
-        for (j <- sectoresJugador(k).indices) { // recorro las filas
-          val auxFila: Array[Int] = Array[Int](3)
-          for (i <- sectoresJugador(k)(j).indices) { // recorro las casillas
-            auxFila(i) = casillasJugador(i)(j) // copio la casilla
-          }
-          auxSector(j) = auxFila // copio la fila
-        }
-        sectoresJugador(k) = auxSector // copio el sector
-      }
-      */
     }
 
     //
@@ -182,16 +112,27 @@ object sudoku {
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
+        // me aseguro que la casilla no estaba ya inicializada
+        if (casillas(i)(j) == 1 &&
+          casillas(i)(j) == 2 &&
+          casillas(i)(j) == 4 &&
+          casillas(i)(j) == 8 &&
+          casillas(i)(j) == 16 &&
+          casillas(i)(j) == 32 &&
+          casillas(i)(j) == 64 &&
+          casillas(i)(j) == 128 &&
+          casillas(i)(j) == 256) {
+          return
+        }
+
         // inicializo un byte con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
         // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
         var mascara = scala.math.pow(2, rand.nextInt(9)).asInstanceOf[Int]
         var valido = false
         while (!valido) {
           if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
-            println(s"casillas(${i})(${j}): ${casillas(i)(j)}, mascara: ${casillas(i)(j)}")
             valido = true
             casillas(i)(j) = mascara
-            println(s"mascara: ${mascara}")
           } else {
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
@@ -211,47 +152,22 @@ object sudoku {
 
       /////////////////////////////////////////////////////////////////////////////////////////////////
       //
+      //  aqui se rellenan las casillas
+      //
       //
 
-      // aqui se rellenan las casillas
-      //
-      // relleno los sectores diagonales
-      //
-      // sector 1
+      // primeras filas
       for (i <- 0 until 3) {
+        for (j <- 0 until 9) {
+          inicializarCasilla(i * 3, j)
+        }
+      }
+      imprimirTablero(casillas)
+
+      // primeras columnas
+      for (i <- 0 until 9) {
         for (j <- 0 until 3) {
-          inicializarCasilla(i, j)
-        }
-      }
-      imprimirTablero(casillas)
-
-      // sector 2
-      for (i <- 3 until 6) {
-        for (j <- 3 until 6) {
-          inicializarCasilla(i, j)
-        }
-      }
-      imprimirTablero(casillas)
-
-      // sector 3
-      for (i <- 6 until 9) {
-        for (j <- 6 until 9) {
-          inicializarCasilla(i, j)
-        }
-      }
-      imprimirTablero(casillas)
-
-      // relleno los sectores (0, 1) y (1, 0)
-      for (i <- 3 until 6) {
-        for (j <- 0 until 3) {
-          inicializarCasilla(i, j)
-        }
-      }
-      imprimirTablero(casillas)
-
-      for (i <- 0 until 3) {
-        for (j <- 3 until 6) {
-          inicializarCasilla(i, j)
+          inicializarCasilla(i, j * 3)
         }
       }
       imprimirTablero(casillas)
@@ -264,7 +180,7 @@ object sudoku {
           casillas(i)(j) = deByteAInt(casillas(i)(j))
         }
       }
-      imprimirTablero(casillas)
+      //imprimirTablero(casillas)
     }
 
     def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
