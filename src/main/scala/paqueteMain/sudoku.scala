@@ -188,6 +188,7 @@ object sudoku {
         var valido = false
         while (!valido) {
           if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
+            println(s"casillas(${i})(${j}): ${casillas(i)(j)}, mascara: ${casillas(i)(j)}")
             valido = true
             casillas(i)(j) = mascara
             println(s"mascara: ${mascara}")
@@ -212,19 +213,50 @@ object sudoku {
       //
       //
 
-
+      // aqui se rellenan las casillas
+      //
+      // relleno los sectores diagonales
+      //
+      // sector 1
       for (i <- 0 until 3) {
         for (j <- 0 until 3) {
-          for (sectori <- 0 until 3) {
-            for (sectorj <- 0 until 3) {
-              inicializarCasilla(sectori * 3 + i, sectorj * 3 + j)
-              imprimirTablero(casillas)
-            }
-          }
-
-
+          inicializarCasilla(i, j)
         }
       }
+      imprimirTablero(casillas)
+
+      // sector 2
+      for (i <- 3 until 6) {
+        for (j <- 3 until 6) {
+          inicializarCasilla(i, j)
+        }
+      }
+      imprimirTablero(casillas)
+
+      // sector 3
+      for (i <- 6 until 9) {
+        for (j <- 6 until 9) {
+          inicializarCasilla(i, j)
+        }
+      }
+      imprimirTablero(casillas)
+
+      // relleno los sectores (0, 1) y (1, 0)
+      for (i <- 3 until 6) {
+        for (j <- 0 until 3) {
+          inicializarCasilla(i, j)
+        }
+      }
+      imprimirTablero(casillas)
+
+      for (i <- 0 until 3) {
+        for (j <- 3 until 6) {
+          inicializarCasilla(i, j)
+        }
+      }
+      imprimirTablero(casillas)
+
+
 
       // cambio los numeros de banderas de bits a los numeros de verdad
       for (i <- casillas.indices) {
