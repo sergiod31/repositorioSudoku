@@ -113,12 +113,13 @@ object sudoku {
       def obtenerSiguienteCasilla(tablero: Array[Array[Int]]): Array[Int] = {
         var iCasilla = 0
         var jCasilla = 0
+        var posibilidadesMin = 9
 
         def obtenerSumaBits(casilla: Int): Int = {
           var aux = casilla
           var contador = 0
           while (aux > 0) {
-            if (aux & 1 > 0) {
+            if ((aux & 1) > 0) {
               contador += 1
             }
             aux >>= 1
@@ -126,41 +127,43 @@ object sudoku {
           contador
         }
 
-        var tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+        val tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
         for (i <- tableroAux.indices) {
           for (j <- tableroAux(i).indices) {
-            var numero: Int = casillas(i)(j)
-            var suma = 0
+            val numero: Int = casillas(i)(j)
+            var suma = 10
             if (numero != 1 &&
               numero != 2 &&
-              numero != 3 &&
               numero != 4 &&
-              numero != 5 &&
-              numero != 6 &&
-              numero != 7 &&
               numero != 8 &&
-              numero != 9 &&) {
+              numero != 16 &&
+              numero != 32 &&
+              numero != 64 &&
+              numero != 128 &&
+              numero != 256) {
               suma = obtenerSumaBits(numero)
-            }
 
+              if (suma < posibilidadesMin) {
+                posibilidadesMin = suma
+                iCasilla = i
+                jCasilla = j
+              }
+            }
           }
         }
-
-
-        var casilla: Array[Int] = Array.ofDim[Int](2)
-
+        Array(iCasilla, jCasilla)
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
         // me aseguro que la casilla no estaba ya inicializada
-        if (casillas(i)(j) == 1 &&
-          casillas(i)(j) == 2 &&
-          casillas(i)(j) == 4 &&
-          casillas(i)(j) == 8 &&
-          casillas(i)(j) == 16 &&
-          casillas(i)(j) == 32 &&
-          casillas(i)(j) == 64 &&
-          casillas(i)(j) == 128 &&
+        if (casillas(i)(j) == 1 ||
+          casillas(i)(j) == 2 ||
+          casillas(i)(j) == 4 ||
+          casillas(i)(j) == 8 ||
+          casillas(i)(j) == 16 ||
+          casillas(i)(j) == 32 ||
+          casillas(i)(j) == 64 ||
+          casillas(i)(j) == 128 ||
           casillas(i)(j) == 256) {
           return
         }
@@ -196,21 +199,35 @@ object sudoku {
       //
       //
 
-      // primeras filas
+      // sector 1
       for (i <- 0 until 3) {
-        for (j <- 0 until 9) {
-          inicializarCasilla(i * 3, j)
+        for (j <- 0 until 3) {
+          inicializarCasilla(i, j)
+        }
+      }
+
+      // sector 2
+      for (i <- 3 until 6) {
+        for (j <- 3 until 6) {
+          inicializarCasilla(i, j)
+        }
+      }
+
+      // sector 3
+      for (i <- 6 until 9) {
+        for (j <- 6 until 9) {
+          inicializarCasilla(i, j)
         }
       }
       imprimirTablero(casillas)
 
-      // primeras columnas
-      for (i <- 0 until 9) {
-        for (j <- 0 until 3) {
-          inicializarCasilla(i, j * 3)
-        }
-      }
-      imprimirTablero(casillas)
+
+
+
+
+
+
+
 
 
 
@@ -220,7 +237,8 @@ object sudoku {
           casillas(i)(j) = deByteAInt(casillas(i)(j))
         }
       }
-      //imprimirTablero(casillas)
+      imprimirTablero(casillas)
+
     }
 
     def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
