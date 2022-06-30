@@ -105,10 +105,50 @@ object sudoku {
           for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
             if (i != fila && j != columna && ((casillas(i)(j) & num) > 0)) {
               casillas(i)(j) -= num
-
             }
           }
         }
+      }
+
+      def obtenerSiguienteCasilla(tablero: Array[Array[Int]]): Array[Int] = {
+        var iCasilla = 0
+        var jCasilla = 0
+
+        def obtenerSumaBits(casilla: Int): Int = {
+          var aux = casilla
+          var contador = 0
+          while (aux > 0) {
+            if (aux & 1 > 0) {
+              contador += 1
+            }
+            aux >>= 1
+          }
+          contador
+        }
+
+        var tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+        for (i <- tableroAux.indices) {
+          for (j <- tableroAux(i).indices) {
+            var numero: Int = casillas(i)(j)
+            var suma = 0
+            if (numero != 1 &&
+              numero != 2 &&
+              numero != 3 &&
+              numero != 4 &&
+              numero != 5 &&
+              numero != 6 &&
+              numero != 7 &&
+              numero != 8 &&
+              numero != 9 &&) {
+              suma = obtenerSumaBits(numero)
+            }
+
+          }
+        }
+
+
+        var casilla: Array[Int] = Array.ofDim[Int](2)
+
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
