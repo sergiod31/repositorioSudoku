@@ -40,13 +40,37 @@ object sudoku {
 
     def deByteAInt(num: Int): Int = {
       //  000 100 000 -> 6
-      var numInt: Int = 1
-      var numByte = num
-      while (numByte != 1) {
-        numByte >>= 1
-        numInt += 1
+      if (num == 1) {
+        return 1
       }
-      numInt
+      if (num == 2) {
+        return 2
+      }
+      if (num == 4) {
+        return 3
+      }
+      if (num == 8) {
+        return 4
+      }
+      if (num == 16) {
+        return 5
+      }
+      if (num == 32) {
+        return 6
+      }
+      if (num == 64) {
+        return 7
+      }
+      if (num == 128) {
+        return 8
+      }
+      if (num == 256) {
+        return 9
+      }
+      if (num == 0) {
+        return 0
+      }
+      -1
     }
 
     def deIntAByte(num: Int): Int = {
@@ -88,6 +112,11 @@ object sudoku {
           // me salto la casilla objetivo original
           if (j != columna && ((casillas(fila)(j) & num) > 0)) {
             casillas(fila)(j) -= num
+
+            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+            if (esNumeroFinal(casillas(fila)(j))) {
+              actualizarFilaColumnaYSector(fila, j, casillas(fila)(j))
+            }
           }
         }
         // actualizo la columna
@@ -95,6 +124,11 @@ object sudoku {
           // me salto la casilla objetivo original
           if (i != fila && ((casillas(i)(columna) & num) > 0)) {
             casillas(i)(columna) -= num
+
+            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+            if (esNumeroFinal(casillas(i)(columna))) {
+              actualizarFilaColumnaYSector(i, columna, casillas(i)(columna))
+            }
           }
         }
 
@@ -105,9 +139,29 @@ object sudoku {
           for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
             if (i != fila && j != columna && ((casillas(i)(j) & num) > 0)) {
               casillas(i)(j) -= num
+
+              // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+              if (esNumeroFinal(casillas(i)(j))) {
+                actualizarFilaColumnaYSector(i, j, casillas(i)(j))
+              }
             }
           }
         }
+      }
+
+      def esNumeroFinal(numero: Int): Boolean = {
+        if (numero == 1 ||
+          numero == 2 ||
+          numero == 4 ||
+          numero == 8 ||
+          numero == 16 ||
+          numero == 32 ||
+          numero == 64 ||
+          numero == 128 ||
+          numero == 256) {
+          return true
+        }
+        false
       }
 
       def obtenerSiguienteCasilla(tablero: Array[Array[Int]]): Array[Int] = {
@@ -172,6 +226,8 @@ object sudoku {
         // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
         var mascara = scala.math.pow(2, rand.nextInt(9)).asInstanceOf[Int]
         var valido = false
+        var contadorVueltas: Int = 0 // por algun motivo, a veces no se consigue inicializar el tablero
+        // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
         while (!valido) {
           if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
             valido = true
@@ -179,6 +235,10 @@ object sudoku {
           } else {
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
+              contadorVueltas += 1
+              if (contadorVueltas > 2) {
+                inicializarTablero()
+              }
             } else { // es par, roto hacia la derecha en 1
               mascara >>= 1
             }
@@ -195,7 +255,7 @@ object sudoku {
 
       /////////////////////////////////////////////////////////////////////////////////////////////////
       //
-      //  aqui se rellenan las casillas
+      //  aqui se llena el tablero
       //
       //
 
@@ -221,6 +281,16 @@ object sudoku {
       }
       imprimirTablero(casillas)
 
+      println("---------------------------------")
+
+      for (i <- 0 until 54) {
+        println(s"ite: ${i}")
+        val sig = obtenerSiguienteCasilla(casillas)
+        println(s"casilla: ${sig(0)}, ${sig(1)}")
+        inicializarCasilla(sig(0), sig(1))
+        imprimirTablero(traducirTablero(casillas))
+      }
+
 
 
 
@@ -232,13 +302,19 @@ object sudoku {
 
 
       // cambio los numeros de banderas de bits a los numeros de verdad
-      for (i <- casillas.indices) {
-        for (j <- casillas(i).indices) {
-          casillas(i)(j) = deByteAInt(casillas(i)(j))
+
+      imprimirTablero(traducirTablero(casillas))
+
+    }
+
+    def traducirTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
+      var tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+      for (i <- tableroAux.indices) {
+        for (j <- tableroAux(i).indices) {
+          tableroAux(i)(j) = deByteAInt(tablero(i)(j))
         }
       }
-      imprimirTablero(casillas)
-
+      tableroAux
     }
 
     def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
