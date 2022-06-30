@@ -16,17 +16,17 @@ object sudoku {
     var tablero = new Tablero
 
     tablero.inicializarTablero()
-    // tablero.imprimirTablero(tablero.casillas)
+    tablero.imprimirTablero(tablero.traducirTablero(tablero.casillas))
 
   }
 
   class Tablero {
     //
-    //        0    1    2         ┌───>   i
+    //        0    1    2         ┌───>   i: fila
     //      ┌────┬────┬────┐      │
     //   0  │ 0  │ 1  │ 2  │      V
     //      ├────┼────┼────┤
-    //   1  │ 3  │ 4  │ 5  │      j
+    //   1  │ 3  │ 4  │ 5  │      j: columna
     //      ├────┼────┼────┤
     //   2  │ 6  │ 7  │ 8  │
     //      └────┴────┴────┘
@@ -40,6 +40,7 @@ object sudoku {
 
     def deByteAInt(num: Int): Int = {
       //  000 100 000 -> 6
+      //  000 001 000 -> 4
       if (num == 1) {
         return 1
       }
@@ -67,6 +68,8 @@ object sudoku {
       if (num == 256) {
         return 9
       }
+
+      // que no se de esto nunca, por dios
       if (num == 0) {
         return 0
       }
@@ -80,7 +83,7 @@ object sudoku {
 
     //
     def comprobarVictoria(): Boolean = {
-      for (i <- 0 to 8; j <- 0 to 8) {
+      for (i <- 0 until 9; j <- 0 until 9) {
         if (casillasJugador(i)(j) != casillas(i)(j)) {
           return false
         }
@@ -164,7 +167,7 @@ object sudoku {
         false
       }
 
-      def obtenerSiguienteCasilla(tablero: Array[Array[Int]]): Array[Int] = {
+      def obtenerSiguienteCasilla(): Array[Int] = {
         var iCasilla = 0
         var jCasilla = 0
         var posibilidadesMin = 9
@@ -279,36 +282,16 @@ object sudoku {
           inicializarCasilla(i, j)
         }
       }
-      imprimirTablero(casillas)
 
-      println("---------------------------------")
-
-      for (i <- 0 until 54) {
-        println(s"ite: ${i}")
-        val sig = obtenerSiguienteCasilla(casillas)
-        println(s"casilla: ${sig(0)}, ${sig(1)}")
+      // inicializo el resto de las casillas. lo normal es que alrededor de 20 ciclos queden vacios
+      for (_ <- 0 until 54) {
+        val sig = obtenerSiguienteCasilla()
         inicializarCasilla(sig(0), sig(1))
-        imprimirTablero(traducirTablero(casillas))
       }
-
-
-
-
-
-
-
-
-
-
-
-      // cambio los numeros de banderas de bits a los numeros de verdad
-
-      imprimirTablero(traducirTablero(casillas))
-
     }
 
     def traducirTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
-      var tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+      val tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
       for (i <- tableroAux.indices) {
         for (j <- tableroAux(i).indices) {
           tableroAux(i)(j) = deByteAInt(tablero(i)(j))
