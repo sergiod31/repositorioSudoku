@@ -3,6 +3,8 @@ package paqueteMain
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.mutable
+
 
 object sudoku {
 
@@ -13,14 +15,18 @@ object sudoku {
       .appName("prueba")
       .getOrCreate();
 
-    var tablero = new Tablero
+    val tablero = new Tablero
 
     tablero.inicializarTablero()
-    tablero.imprimirTablero(tablero.traducirTablero(tablero.casillas))
+
+    var dificultad:Int = input()
+    tablero.inicializarTableroJugador(5)
+    tablero.imprimirCasillasJugador()
 
   }
 
   class Tablero {
+    val dimension: Int = 9
     //
     //        0    1    2         ┌───>   i: fila
     //      ┌────┬────┬────┐      │
@@ -32,10 +38,10 @@ object sudoku {
     //      └────┴────┴────┘
     //
     //  casillas solucion
-    val casillas: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    val casillas: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
     //
     //  casillas para el jugador
-    val casillasJugador: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    var casillasJugador: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
     //
 
     def deByteAInt(num: Int): Int = {
@@ -290,6 +296,33 @@ object sudoku {
       }
     }
 
+    def inicializarTableroJugador(dificultad: Int): Unit = {
+      casillasJugador = traducirTablero(casillas)
+
+      val rand = scala.util.Random
+
+      val mapa = new mutable.HashMap[Int, Array[Int]]
+      for (_ <- 0 until dificultad) {
+        var i: Int = rand.nextInt(9)
+        var j: Int = rand.nextInt(9)
+        var casilla: Array[Int] = Array[Int](i, j)
+        while (mapa.contains(i * 10 + j)) {
+          i = rand.nextInt(9)
+          j = rand.nextInt(9)
+          casilla = Array[Int](i, j)
+        }
+        mapa += (i * 10 + j -> casilla)
+      }
+      // ya tengo que casillas eliminar
+
+      mapa.foreach({
+        case (_, value) => {
+          casillasJugador(value(0))(value(1)) = 0
+        }
+
+      })
+    }
+
     def traducirTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
       val tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
       for (i <- tableroAux.indices) {
@@ -300,7 +333,38 @@ object sudoku {
       tableroAux
     }
 
-    def imprimirTablero(tablero: Array[Array[Int]]): Unit = {
+    def imprimirCasillas(): Unit = {
+      val tablero = casillas
+      println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
+      println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(1)(0)}  │ ${tablero(1)(1)}  │ ${tablero(1)(2)}  │ ${tablero(1)(3)}  │ ${tablero(1)(4)}  │ ${tablero(1)(5)}  │  ${tablero(1)(6)} │ ${tablero(1)(7)}  │ ${tablero(1)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(2)(0)}  │ ${tablero(2)(1)}  │ ${tablero(2)(2)}  │ ${tablero(2)(3)}  │ ${tablero(2)(4)}  │ ${tablero(2)(5)}  │  ${tablero(2)(6)} │ ${tablero(2)(7)}  │ ${tablero(2)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(3)(0)}  │ ${tablero(3)(1)}  │ ${tablero(3)(2)}  │ ${tablero(3)(3)}  │ ${tablero(3)(4)}  │ ${tablero(3)(5)}  │  ${tablero(3)(6)} │ ${tablero(3)(7)}  │ ${tablero(3)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(4)(0)}  │ ${tablero(4)(1)}  │ ${tablero(4)(2)}  │ ${tablero(4)(3)}  │ ${tablero(4)(4)}  │ ${tablero(4)(5)}  │  ${tablero(4)(6)} │ ${tablero(4)(7)}  │ ${tablero(4)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(5)(0)}  │ ${tablero(5)(1)}  │ ${tablero(5)(2)}  │ ${tablero(5)(3)}  │ ${tablero(5)(4)}  │ ${tablero(5)(5)}  │  ${tablero(5)(6)} │ ${tablero(5)(7)}  │ ${tablero(5)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(6)(0)}  │ ${tablero(6)(1)}  │ ${tablero(6)(2)}  │ ${tablero(6)(3)}  │ ${tablero(6)(4)}  │ ${tablero(6)(5)}  │  ${tablero(6)(6)} │ ${tablero(6)(7)}  │ ${tablero(6)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(7)(0)}  │ ${tablero(7)(1)}  │ ${tablero(7)(2)}  │ ${tablero(7)(3)}  │ ${tablero(7)(4)}  │ ${tablero(7)(5)}  │  ${tablero(7)(6)} │ ${tablero(7)(7)}  │ ${tablero(7)(8)}  │")
+      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"│ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
+      println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
+    }
+
+    def imprimirCasillasJugador(): Unit = {
+      val tablero: Array[Array[String]] = Array.ofDim[String](9, 9)
+
+      for (i <- tablero.indices; j <- tablero(i).indices) {
+        tablero(i)(j) = casillasJugador(i)(j).toString
+        if (casillasJugador(i)(j) == 0) {
+          tablero(i)(j) = " "
+        }
+      }
       println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
       println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
       println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
