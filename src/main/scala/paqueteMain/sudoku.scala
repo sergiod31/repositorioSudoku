@@ -32,54 +32,109 @@ object sudoku {
     println("")
     println("")
     println("")
-    print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
 
-    //
-    // TESTEADO: funciona perfectamente, no tocar
-    //
-    // miro que la dificultad elegida sea un numero
-    // y sea entre 1 y 50
-    var entradaCorrecta = false
-    var dificultad = -1
-    while (!entradaCorrecta) {
-      entradaCorrecta = true
-      val entradaChars: Array[Char] = scala.io.StdIn.readLine().toCharArray
-      if (entradaChars.length > 2 ||
-        entradaChars.length <= 0) {
-        entradaCorrecta = false
-        println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
-        print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
-      } else {
-        // ha introducido 1 ó 2 caracteres
-        for (ite <- entradaChars.indices) {
-          if (entradaChars(ite) < 48 || entradaChars(ite) > 57) {
+
+    def pedirDificultad(): Int = {
+      //
+      // TESTEADO: funciona perfectamente, no tocar
+      //
+      // miro que la dificultad elegida sea un numero
+      // y sea entre 1 y ${dificultadMaxima}
+
+      print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+      var entradaCorrecta = false
+      var dificultad = -1
+      while (!entradaCorrecta) {
+        entradaCorrecta = true
+        val entradaChars: Array[Char] = scala.io.StdIn.readLine().toCharArray
+        if (entradaChars.length > 2 ||
+          entradaChars.length <= 0) {
+          entradaCorrecta = false
+          println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+          print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+        } else {
+          // ha introducido 1 ó 2 caracteres
+          for (ite <- entradaChars.indices) {
+            if (entradaChars(ite) < 48 || entradaChars(ite) > 57) {
+              entradaCorrecta = false
+            }
+          }
+          if (entradaCorrecta) {
+            // ha introducido 1 o 2 digitos numericos
+            // los paso a numero
+            if (entradaChars.length == 1) {
+              dificultad = entradaChars(0).toInt - 48
+            } else {
+              // supongo entradaChars.length como == 2
+              dificultad = (entradaChars(0).toInt - 48) * 10 + (entradaChars(1).toInt - 48)
+              if (dificultad > dificultadMaxima) {
+                entradaCorrecta = false
+                println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+                print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+              }
+            }
+          } else {
+            println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+            print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+          }
+        }
+      }
+      dificultad
+    }
+
+    def pedirFilaColumnaNum(): Array[Int] = {
+      val casilla: Array[Int] = Array.ofDim[Int](3)
+
+      var entradaCorrecta = false
+      while (!entradaCorrecta) {
+        entradaCorrecta = true
+        print("Fila: ")
+        var fila = scala.io.StdIn.readLine().toCharArray
+        print("Columna: ")
+        var columna = scala.io.StdIn.readLine().toCharArray
+        print("Número: ")
+        var num = scala.io.StdIn.readLine().toCharArray
+
+        if (fila.length != 1 || columna.length != 1 || num.length != 1) {
+          entradaCorrecta = false
+        } else {
+          if (fila(0) <= 48 || fila(0) > 57 ||
+            columna(0) <= 48 || columna(0) > 57 ||
+            num(0) <= 48 || num(0) > 57) {
             entradaCorrecta = false
           }
         }
-        if (entradaCorrecta) {
-          // ha introducido 1 o 2 digitos numericos
-          // los paso a numero
-          if (entradaChars.length == 1) {
-            dificultad = entradaChars(0).toInt - 48
-          } else {
-            // supongo entradaChars.length como == 2
-            dificultad = (entradaChars(0).toInt - 48) * 10 + (entradaChars(1).toInt - 48)
-            if (dificultad > dificultadMaxima) {
-              entradaCorrecta = false
-              println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
-              print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
-            }
-          }
-        } else {
-          println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
-          print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
-        }
+        casilla(0) = fila(0).toInt - 48
+        casilla(1) = columna(0).toInt - 48
+        casilla(1) = num(0).toInt - 48
       }
+      casilla
     }
 
+    def nuevaPartida(): Unit = {
+      // pido dificultad
+      var dificultad = pedirDificultad()
+
+      // inicializo tableros
+      tablero.inicializarTableroJugador(dificultad)
+      tablero.imprimirCasillasJugador()
+
+      // mientras no haya ganado:
+      while (!tablero.comprobarVictoria()) {
+        // pido (i, j)
+        var casilla: Array[Int] = pedirFilaColumnaNum()
+        tablero.casillasJugador(casilla(0))(casilla(1)) = casilla(2)
+      }
+
+    }
+
+
+    nuevaPartida()
+
+
+
     //
-    tablero.inicializarTableroJugador(dificultad)
-    tablero.imprimirCasillasJugador()
+
 
   }
 
@@ -153,6 +208,26 @@ object sudoku {
         }
       }
       true
+    }
+
+    def comprobarNumeroValido(i: Int, j: Int, num: Int): Boolean = {
+      if (casillasJugador(i)(j) == 0) {
+        return false
+      }
+
+      def comprobarFila(): Boolean ={
+
+      }
+
+      def comprobarColumna(): Boolean ={
+
+      }
+
+      def comprobarSector(): Boolean ={
+
+      }
+
+      comprobarFila() & comprobarColumna() & comprobarSector()
     }
 
     // obtiene, de una fila + columna, a que sector pertenece
