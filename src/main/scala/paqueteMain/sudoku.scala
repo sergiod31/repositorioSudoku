@@ -16,11 +16,69 @@ object sudoku {
       .getOrCreate();
 
     val tablero = new Tablero
+    val dificultadMaxima = 75
 
     tablero.inicializarTablero()
 
-    var dificultad:Int = input()
-    tablero.inicializarTableroJugador(5)
+    println("")
+    println("")
+    println("")
+    println("     ░██████╗██╗░░░██╗██████╗░░█████╗░██╗░░██╗██╗░░░██╗")
+    println("     ██╔════╝██║░░░██║██╔══██╗██╔══██╗██║░██╔╝██║░░░██║")
+    println("     ╚█████╗░██║░░░██║██║░░██║██║░░██║█████═╝░██║░░░██║")
+    println("     ░╚═══██╗██║░░░██║██║░░██║██║░░██║██╔═██╗░██║░░░██║")
+    println("     ██████╔╝╚██████╔╝██████╔╝╚█████╔╝██║░╚██╗╚██████╔╝")
+    println("     ╚═════╝░░╚═════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝░╚═════╝░")
+    println("")
+    println("")
+    println("")
+    print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+
+    //
+    // TESTEADO: funciona perfectamente, no tocar
+    //
+    // miro que la dificultad elegida sea un numero
+    // y sea entre 1 y 50
+    var entradaCorrecta = false
+    var dificultad = -1
+    while (!entradaCorrecta) {
+      entradaCorrecta = true
+      val entradaChars: Array[Char] = scala.io.StdIn.readLine().toCharArray
+      if (entradaChars.length > 2 ||
+        entradaChars.length <= 0) {
+        entradaCorrecta = false
+        println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+        print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+      } else {
+        // ha introducido 1 ó 2 caracteres
+        for (ite <- entradaChars.indices) {
+          if (entradaChars(ite) < 48 || entradaChars(ite) > 57) {
+            entradaCorrecta = false
+          }
+        }
+        if (entradaCorrecta) {
+          // ha introducido 1 o 2 digitos numericos
+          // los paso a numero
+          if (entradaChars.length == 1) {
+            dificultad = entradaChars(0).toInt - 48
+          } else {
+            // supongo entradaChars.length como == 2
+            dificultad = (entradaChars(0).toInt - 48) * 10 + (entradaChars(1).toInt - 48)
+            if (dificultad > dificultadMaxima) {
+              entradaCorrecta = false
+              println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+              print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+            }
+          }
+        } else {
+          println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+          print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+        }
+      }
+    }
+
+    //
+    tablero.inicializarTableroJugador(dificultad)
     tablero.imprimirCasillasJugador()
 
   }
