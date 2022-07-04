@@ -89,11 +89,11 @@ object sudoku {
       while (!entradaCorrecta) {
         entradaCorrecta = true
         print("Fila: ")
-        var fila = scala.io.StdIn.readLine().toCharArray
+        val fila = scala.io.StdIn.readLine().toCharArray
         print("Columna: ")
-        var columna = scala.io.StdIn.readLine().toCharArray
+        val columna = scala.io.StdIn.readLine().toCharArray
         print("Número: ")
-        var num = scala.io.StdIn.readLine().toCharArray
+        val num = scala.io.StdIn.readLine().toCharArray
 
         if (fila.length != 1 || columna.length != 1 || num.length != 1) {
           entradaCorrecta = false
@@ -104,32 +104,68 @@ object sudoku {
             entradaCorrecta = false
           }
         }
-        casilla(0) = fila(0).toInt - 48
-        casilla(1) = columna(0).toInt - 48
-        casilla(1) = num(0).toInt - 48
+        casilla(0) = fila(0).toInt - 48 - 1
+        casilla(1) = columna(0).toInt - 48 - 1
+        casilla(2) = num(0).toInt - 48
       }
       casilla
     }
 
-    def nuevaPartida(): Unit = {
+    def pedirNuevaPartida(): Boolean = {
+      println("¿Nueva partida (Y/N)?")
+      val respuesta: Array[Char] = scala.io.StdIn.readLine().toCharArray
+      if (respuesta(0) != 'Y' && respuesta(0) != 'y' &&
+        respuesta(0) != 'N' && respuesta(0) != 'n') {
+        // input erroneo
+        return pedirNuevaPartida()
+      }
+      if (respuesta(0) == 'Y' ||
+        respuesta(0) == 'y') {
+        return true
+      }
+      false
+    }
+
+
+    // si al acabar quiere volver a jugar, retorna true, si no, false
+    def nuevaPartida(): Boolean = {
+
       // pido dificultad
       var dificultad = pedirDificultad()
 
       // inicializo tableros
       tablero.inicializarTableroJugador(dificultad)
-      tablero.imprimirCasillasJugador()
+      tablero.imprimirTableroJugador()
 
-      // mientras no haya ganado:
+      // mientras la partida continue:
       while (!tablero.comprobarVictoria()) {
         // pido (i, j)
         var casilla: Array[Int] = pedirFilaColumnaNum()
-        tablero.casillasJugador(casilla(0))(casilla(1)) = casilla(2)
-      }
 
+        // intento colocar el numero pedido
+        while (!tablero.colocarNumero(casilla(0), casilla(1), casilla(2))) {
+          println("No se puede colocar ese número, intente con otro o en otra casilla")
+          casilla = pedirFilaColumnaNum()
+        }
+        // he colocado un nuevo numero
+        tablero.imprimirTableroJugador()
+
+        // compruebo ha llegado a un callejon sin salida
+        if (!tablero.comprobarDerrota()) {
+          // ha perdido
+          println("No se puede continuar")
+          println("")
+          return pedirNuevaPartida()
+        }
+      }
+      //
+      pedirNuevaPartida()
     }
 
 
-    nuevaPartida()
+    while (nuevaPartida()) {
+      println("nueva partida!")
+    }
 
 
 
@@ -155,6 +191,9 @@ object sudoku {
     //
     //  casillas para el jugador
     var casillasJugador: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
+    //
+    // casillas que comprueban si se puede seguir jugando
+    var casillasJugadorBin: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
     //
 
     def deByteAInt(num: Int): Int = {
@@ -210,86 +249,83 @@ object sudoku {
       true
     }
 
-    def comprobarNumeroValido(i: Int, j: Int, num: Int): Boolean = {
-      if (casillasJugador(i)(j) == 0) {
+    // false -> derrota
+    def comprobarDerrota(): Boolean = {
+      for (i <- casillasJugadorBin.indices; j <- casillasJugadorBin(i).indices) {
+        if (casillasJugadorBin(i)(j) == 0) {
+          return false
+        }
+      }
+      true
+    }
+
+    def comprobarNumeroValido(fila: Int, columna: Int, num: Int): Boolean = {
+      // TODO borrar
+      println(s"casillasJugador -> ${casillasJugador(fila)(columna)}")
+      if (casillasJugador(fila)(columna) != 0) {
         return false
       }
+      println("no lo ha instadescartado")
 
-      def comprobarFila(): Boolean ={
-
+      def comprobarFila(): Boolean = {
+        for (j <- casillasJugador(fila).indices) {
+          if (casillasJugador(fila)(j) == num) {
+            return false
+          }
+        }
+        true
       }
 
-      def comprobarColumna(): Boolean ={
-
+      def comprobarColumna(): Boolean = {
+        for (i <- casillasJugador.indices) {
+          if (casillasJugador(i)(columna) == num) {
+            return false
+          }
+        }
+        true
       }
 
-      def comprobarSector(): Boolean ={
-
+      def comprobarSector(): Boolean = {
+        var sector: Int = getSector(fila, columna)
+        for (i <- sector % 3 to sector % 3 + 2;
+             j <- sector / 3 to sector / 3 + 2) {
+          if (casillasJugador(i)(j) == num) {
+            return false
+          }
+        }
+        true
       }
 
+      println(comprobarFila() & comprobarColumna() & comprobarSector())
       comprobarFila() & comprobarColumna() & comprobarSector()
     }
 
+
+    def colocarNumero(fila: Int, columna: Int, num: Int): Boolean = {
+      println(s"(${fila}, ${columna}) -> ${casillasJugadorBin(fila)(columna).toBinaryString}")
+      if (!comprobarNumeroValido(fila, columna, num)) {
+        println("dice que numero no valido")
+        return false
+      }
+      println("ASDASDas")
+
+      // se puede colocar
+      //imprimirTableroJugadorBin()
+      actualizarFilaColumnaYSector(fila, columna, num, casillasJugadorBin)
+      //imprimirTableroJugadorBin()
+      
+      casillasJugador(fila)(columna) = num
+      true
+    }
+
     // obtiene, de una fila + columna, a que sector pertenece
+    // va de [0 - 2]
     def getSector(fila: Int, columna: Int): Int = {
       (fila / 3) + ((columna / 3) * 3)
     }
 
-    /*
-     * genero los 81 numeros para el tablero
-     */
-    def inicializarTablero(): Unit = {
-      val rand = scala.util.Random
-
-      // relleno tablero de '111 111 111'
-      for (i <- casillas.indices) {
-        for (j <- casillas(i).indices) {
-          casillas(i)(j) = 511
-        }
-      }
-
-      def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int): Unit = {
-        // actualizo la fila
-        for (j <- casillas(fila).indices) { // recorro la fila pedida
-          // me salto la casilla objetivo original
-          if (j != columna && ((casillas(fila)(j) & num) > 0)) {
-            casillas(fila)(j) -= num
-
-            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-            if (esNumeroFinal(casillas(fila)(j))) {
-              actualizarFilaColumnaYSector(fila, j, casillas(fila)(j))
-            }
-          }
-        }
-        // actualizo la columna
-        for (i <- casillas.indices) { // recorro la columna pedida
-          // me salto la casilla objetivo original
-          if (i != fila && ((casillas(i)(columna) & num) > 0)) {
-            casillas(i)(columna) -= num
-
-            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-            if (esNumeroFinal(casillas(i)(columna))) {
-              actualizarFilaColumnaYSector(i, columna, casillas(i)(columna))
-            }
-          }
-        }
-
-        // actualizo el sector
-        // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
-        val sector: Int = getSector(fila, columna)
-        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
-          for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
-            if (i != fila && j != columna && ((casillas(i)(j) & num) > 0)) {
-              casillas(i)(j) -= num
-
-              // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-              if (esNumeroFinal(casillas(i)(j))) {
-                actualizarFilaColumnaYSector(i, j, casillas(i)(j))
-              }
-            }
-          }
-        }
-      }
+    // tablero en contador binario!
+    def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int, tablero: Array[Array[Int]]): Unit = {
 
       def esNumeroFinal(numero: Int): Boolean = {
         if (numero == 1 ||
@@ -305,6 +341,63 @@ object sudoku {
         }
         false
       }
+
+
+      // actualizo la fila
+      for (j <- tablero(fila).indices) { // recorro la fila pedida
+        // me salto la casilla objetivo original
+        if (j != columna && ((tablero(fila)(j) & num) > 0)) {
+          tablero(fila)(j) -= num
+
+          // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+          if (esNumeroFinal(tablero(fila)(j))) {
+            actualizarFilaColumnaYSector(fila, j, tablero(fila)(j), tablero)
+          }
+        }
+      }
+      // actualizo la columna
+      for (i <- tablero.indices) { // recorro la columna pedida
+        // me salto la casilla objetivo original
+        if (i != fila && ((tablero(i)(columna) & num) > 0)) {
+          tablero(i)(columna) -= num
+
+          // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+          if (esNumeroFinal(tablero(i)(columna))) {
+            actualizarFilaColumnaYSector(i, columna, tablero(i)(columna), tablero)
+          }
+        }
+      }
+
+      // actualizo el sector
+      // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
+      val sector: Int = getSector(fila, columna)
+      for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
+        for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+          if (i != fila && j != columna && ((tablero(i)(j) & num) > 0)) {
+            tablero(i)(j) -= num
+
+            // si al actualizar, un numero secundario colapsa a un numero
+            if (esNumeroFinal(tablero(i)(j))) {
+              actualizarFilaColumnaYSector(i, j, tablero(i)(j), tablero)
+            }
+          }
+        }
+      }
+    }
+
+    /*
+     * genero los 81 numeros para el tablero
+     */
+    def inicializarTablero(): Unit = {
+      val rand = scala.util.Random
+
+      // relleno tablero de '111 111 111'
+      for (i <- casillas.indices) {
+        for (j <- casillas(i).indices) {
+          casillas(i)(j) = 511
+        }
+      }
+
 
       def obtenerSiguienteCasilla(): Array[Int] = {
         var iCasilla = 0
@@ -392,7 +485,7 @@ object sudoku {
         // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
         //val numero: Int = deByteAInt(mascara)
         val numero: Int = (mascara)
-        actualizarFilaColumnaYSector(i, j, numero)
+        actualizarFilaColumnaYSector(i, j, numero, casillas)
       }
 
       /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,6 +529,7 @@ object sudoku {
 
       val mapa = new mutable.HashMap[Int, Array[Int]]
       for (_ <- 0 until dificultad) {
+        // se podria cambiar por un do while
         var i: Int = rand.nextInt(9)
         var j: Int = rand.nextInt(9)
         var casilla: Array[Int] = Array[Int](i, j)
@@ -449,11 +543,20 @@ object sudoku {
       // ya tengo que casillas eliminar
 
       mapa.foreach({
-        case (_, value) => {
-          casillasJugador(value(0))(value(1)) = 0
-        }
-
+        case (_, value) => casillasJugador(value(0))(value(1)) = 0
       })
+
+      // inicializo casillasJugadorBin
+      for (i <- casillasJugadorBin.indices; j <- casillasJugadorBin(i).indices) {
+        casillasJugadorBin(i)(j) = 511
+      }
+
+      // actualizo casillasJugadorBin segun casillasJugador
+      for (i <- casillasJugador.indices; j <- casillasJugador(i).indices) {
+        if (casillasJugador(i)(j) != 0) {
+          actualizarFilaColumnaYSector(i, j, deIntAByte(casillasJugador(i)(j)), casillasJugadorBin)
+        }
+      }
     }
 
     def traducirTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
@@ -466,7 +569,7 @@ object sudoku {
       tableroAux
     }
 
-    def imprimirCasillas(): Unit = {
+    def imprimirTablero(): Unit = {
       val tablero = casillas
       println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
       println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
@@ -489,7 +592,7 @@ object sudoku {
       println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
     }
 
-    def imprimirCasillasJugador(): Unit = {
+    def imprimirTableroJugador(): Unit = {
       val tablero: Array[Array[String]] = Array.ofDim[String](9, 9)
 
       for (i <- tablero.indices; j <- tablero(i).indices) {
@@ -498,27 +601,37 @@ object sudoku {
           tablero(i)(j) = " "
         }
       }
-      println("┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
-      println(s"│ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(1)(0)}  │ ${tablero(1)(1)}  │ ${tablero(1)(2)}  │ ${tablero(1)(3)}  │ ${tablero(1)(4)}  │ ${tablero(1)(5)}  │  ${tablero(1)(6)} │ ${tablero(1)(7)}  │ ${tablero(1)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(2)(0)}  │ ${tablero(2)(1)}  │ ${tablero(2)(2)}  │ ${tablero(2)(3)}  │ ${tablero(2)(4)}  │ ${tablero(2)(5)}  │  ${tablero(2)(6)} │ ${tablero(2)(7)}  │ ${tablero(2)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(3)(0)}  │ ${tablero(3)(1)}  │ ${tablero(3)(2)}  │ ${tablero(3)(3)}  │ ${tablero(3)(4)}  │ ${tablero(3)(5)}  │  ${tablero(3)(6)} │ ${tablero(3)(7)}  │ ${tablero(3)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(4)(0)}  │ ${tablero(4)(1)}  │ ${tablero(4)(2)}  │ ${tablero(4)(3)}  │ ${tablero(4)(4)}  │ ${tablero(4)(5)}  │  ${tablero(4)(6)} │ ${tablero(4)(7)}  │ ${tablero(4)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(5)(0)}  │ ${tablero(5)(1)}  │ ${tablero(5)(2)}  │ ${tablero(5)(3)}  │ ${tablero(5)(4)}  │ ${tablero(5)(5)}  │  ${tablero(5)(6)} │ ${tablero(5)(7)}  │ ${tablero(5)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(6)(0)}  │ ${tablero(6)(1)}  │ ${tablero(6)(2)}  │ ${tablero(6)(3)}  │ ${tablero(6)(4)}  │ ${tablero(6)(5)}  │  ${tablero(6)(6)} │ ${tablero(6)(7)}  │ ${tablero(6)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(7)(0)}  │ ${tablero(7)(1)}  │ ${tablero(7)(2)}  │ ${tablero(7)(3)}  │ ${tablero(7)(4)}  │ ${tablero(7)(5)}  │  ${tablero(7)(6)} │ ${tablero(7)(7)}  │ ${tablero(7)(8)}  │")
-      println("├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"│ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
-      println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
+      println("")
+      println("    1    2    3    4    5    6    7    8    9")
+      println("  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
+      println(s"1 │ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"2 │ ${tablero(1)(0)}  │ ${tablero(1)(1)}  │ ${tablero(1)(2)}  │ ${tablero(1)(3)}  │ ${tablero(1)(4)}  │ ${tablero(1)(5)}  │  ${tablero(1)(6)} │ ${tablero(1)(7)}  │ ${tablero(1)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"3 │ ${tablero(2)(0)}  │ ${tablero(2)(1)}  │ ${tablero(2)(2)}  │ ${tablero(2)(3)}  │ ${tablero(2)(4)}  │ ${tablero(2)(5)}  │  ${tablero(2)(6)} │ ${tablero(2)(7)}  │ ${tablero(2)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"4 │ ${tablero(3)(0)}  │ ${tablero(3)(1)}  │ ${tablero(3)(2)}  │ ${tablero(3)(3)}  │ ${tablero(3)(4)}  │ ${tablero(3)(5)}  │  ${tablero(3)(6)} │ ${tablero(3)(7)}  │ ${tablero(3)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"5 │ ${tablero(4)(0)}  │ ${tablero(4)(1)}  │ ${tablero(4)(2)}  │ ${tablero(4)(3)}  │ ${tablero(4)(4)}  │ ${tablero(4)(5)}  │  ${tablero(4)(6)} │ ${tablero(4)(7)}  │ ${tablero(4)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"6 │ ${tablero(5)(0)}  │ ${tablero(5)(1)}  │ ${tablero(5)(2)}  │ ${tablero(5)(3)}  │ ${tablero(5)(4)}  │ ${tablero(5)(5)}  │  ${tablero(5)(6)} │ ${tablero(5)(7)}  │ ${tablero(5)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"7 │ ${tablero(6)(0)}  │ ${tablero(6)(1)}  │ ${tablero(6)(2)}  │ ${tablero(6)(3)}  │ ${tablero(6)(4)}  │ ${tablero(6)(5)}  │  ${tablero(6)(6)} │ ${tablero(6)(7)}  │ ${tablero(6)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"8 │ ${tablero(7)(0)}  │ ${tablero(7)(1)}  │ ${tablero(7)(2)}  │ ${tablero(7)(3)}  │ ${tablero(7)(4)}  │ ${tablero(7)(5)}  │  ${tablero(7)(6)} │ ${tablero(7)(7)}  │ ${tablero(7)(8)}  │")
+      println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
+      println(s"9 │ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
+      println("  └────┴────┴────┴────┴────┴────┴────┴────┴────┘")
+    }
+
+    def imprimirTableroJugadorBin(): Unit = {
+      println("TABLERO JUGADOR BIN:")
+      for (i <- casillasJugadorBin.indices) {
+        for (j <- casillasJugadorBin(i).indices) {
+          print(s"${casillasJugadorBin(i)(j).toBinaryString} - ")
+        }
+        println("")
+      }
     }
   }
-
-
 }
