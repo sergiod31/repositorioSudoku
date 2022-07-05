@@ -18,10 +18,6 @@ object sudoku {
     val tablero = new Tablero
     val dificultadMaxima = 75
 
-    val casillasTest: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 2), (0, 3), (3, 3), (3, 6), (6, 6), (7, 0))
-    for (i <- casillasTest.indices) {
-      println(s"${casillasTest(i).toString()} -> sector: ${tablero.getSector(casillasTest(i)._1, casillasTest(i)._2)}")
-    }
 
     tablero.inicializarTablero()
 
@@ -325,7 +321,6 @@ object sudoku {
     // obtiene, de una fila + columna, a que sector pertenece
     // va de [0 - 2]
     def getSector(fila: Int, columna: Int): Int = {
-      //(fila / 3) + ((columna / 3) * 3)
       ((fila / 3) * 3) + (columna / 3)
     }
 
@@ -376,8 +371,8 @@ object sudoku {
       // actualizo el sector
       // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
       val sector: Int = getSector(fila, columna)
-      for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
-        for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+      for (i <- sector % 3 * 3 to (sector % 3 * 3) + 2) { // fila del sector
+        for (j <- sector / 3 * 3 to (sector / 3 * 3) + 2) { // columna del sector
           if (i != fila && j != columna && ((tablero(i)(j) & num) > 0)) {
             tablero(i)(j) -= num
 
@@ -403,11 +398,11 @@ object sudoku {
         }
       }
 
-
+      // TODO el bug que provoca desbordamientode memoria puede que este por aqui
       def obtenerSiguienteCasilla(): Array[Int] = {
         var iCasilla = 0
-        var jCasilla = 0
-        var posibilidadesMin = 9
+        var jCasilla = 0 // fila y columna de la casilla solucion
+        var posibilidadesMin = 9 // variable auxiliar con el record del num minimo de posibilidades de una casilla
 
         def obtenerSumaBits(casilla: Int): Int = {
           var aux = casilla
