@@ -18,6 +18,11 @@ object sudoku {
     val tablero = new Tablero
     val dificultadMaxima = 75
 
+    val casillasTest: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 2), (0, 3), (3, 3), (3, 6), (6, 6), (7, 0))
+    for (i <- casillasTest.indices) {
+      println(s"${casillasTest(i).toString()} -> sector: ${tablero.getSector(casillasTest(i)._1, casillasTest(i)._2)}")
+    }
+
     tablero.inicializarTablero()
 
     println("")
@@ -260,8 +265,6 @@ object sudoku {
     }
 
     def comprobarNumeroValido(fila: Int, columna: Int, num: Int): Boolean = {
-      // TODO borrar
-      println(s"casillasJugador -> ${casillasJugador(fila)(columna)}")
       if (casillasJugador(fila)(columna) != 0) {
         return false
       }
@@ -286,7 +289,8 @@ object sudoku {
       }
 
       def comprobarSector(): Boolean = {
-        var sector: Int = getSector(fila, columna)
+        val sector: Int = getSector(fila, columna)
+        println(s"      (${fila}, ${columna}) -> sector ${sector}     -----")
         for (i <- sector % 3 to sector % 3 + 2;
              j <- sector / 3 to sector / 3 + 2) {
           if (casillasJugador(i)(j) == num) {
@@ -313,7 +317,7 @@ object sudoku {
       //imprimirTableroJugadorBin()
       actualizarFilaColumnaYSector(fila, columna, num, casillasJugadorBin)
       //imprimirTableroJugadorBin()
-      
+
       casillasJugador(fila)(columna) = num
       true
     }
@@ -321,7 +325,8 @@ object sudoku {
     // obtiene, de una fila + columna, a que sector pertenece
     // va de [0 - 2]
     def getSector(fila: Int, columna: Int): Int = {
-      (fila / 3) + ((columna / 3) * 3)
+      //(fila / 3) + ((columna / 3) * 3)
+      ((fila / 3) * 3) + (columna / 3)
     }
 
     // tablero en contador binario!
