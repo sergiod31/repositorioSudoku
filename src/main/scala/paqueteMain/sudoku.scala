@@ -18,16 +18,6 @@ object sudoku {
     val tablero = new Tablero
     val dificultadMaxima = 75
 
-    println(s"3, 0 - ${tablero.getSector(3, 0)}")
-    println(s"0, 0 - ${tablero.getSector(0, 0)}")
-    println(s"0, 1 - ${tablero.getSector(0, 1)}")
-    println(s"1, 0 - ${tablero.getSector(1, 0)}")
-    println(s"5, 0 - ${tablero.getSector(5, 0)}")
-    println(s"5, 5 - ${tablero.getSector(5, 5)}")
-    println(s"5, 8 - ${tablero.getSector(5, 8)}")
-    println(s"8, 8 - ${tablero.getSector(8, 8)}")
-
-
     tablero.inicializarTablero()
 
     println("")
@@ -296,10 +286,7 @@ object sudoku {
       }
 
       def comprobarSector(): Boolean = {
-        val sector: Int = getSector(fila, columna)
-        println(s"fila: ${fila}")
-        println(s"columna: ${columna}")
-        println(s"sector: ${sector}")
+        var sector: Int = getSector(fila, columna)
         for (i <- sector % 3 to sector % 3 + 2;
              j <- sector / 3 to sector / 3 + 2) {
           if (casillasJugador(i)(j) == num) {
@@ -309,7 +296,7 @@ object sudoku {
         true
       }
 
-
+      println(comprobarFila() & comprobarColumna() & comprobarSector())
       comprobarFila() & comprobarColumna() & comprobarSector()
     }
 
@@ -317,14 +304,16 @@ object sudoku {
     def colocarNumero(fila: Int, columna: Int, num: Int): Boolean = {
       println(s"(${fila}, ${columna}) -> ${casillasJugadorBin(fila)(columna).toBinaryString}")
       if (!comprobarNumeroValido(fila, columna, num)) {
+        println("dice que numero no valido")
         return false
       }
+      println("ASDASDas")
 
       // se puede colocar
       //imprimirTableroJugadorBin()
       actualizarFilaColumnaYSector(fila, columna, num, casillasJugadorBin)
       //imprimirTableroJugadorBin()
-
+      
       casillasJugador(fila)(columna) = num
       true
     }
@@ -332,7 +321,7 @@ object sudoku {
     // obtiene, de una fila + columna, a que sector pertenece
     // va de [0 - 2]
     def getSector(fila: Int, columna: Int): Int = {
-      (columna / 3) + ((fila / 3) * 3)
+      (fila / 3) + ((columna / 3) * 3)
     }
 
     // tablero en contador binario!
