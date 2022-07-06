@@ -264,7 +264,6 @@ object sudoku {
       if (casillasJugador(fila)(columna) != 0) {
         return false
       }
-      println("no lo ha instadescartado")
 
       def comprobarFila(): Boolean = {
         for (j <- casillasJugador(fila).indices) {
@@ -286,7 +285,6 @@ object sudoku {
 
       def comprobarSector(): Boolean = {
         val sector: Int = getSector(fila, columna)
-        println(s"      (${fila}, ${columna}) -> sector ${sector}     -----")
         for (i <- sector % 3 to sector % 3 + 2;
              j <- sector / 3 to sector / 3 + 2) {
           if (casillasJugador(i)(j) == num) {
@@ -296,23 +294,17 @@ object sudoku {
         true
       }
 
-      println(comprobarFila() & comprobarColumna() & comprobarSector())
       comprobarFila() & comprobarColumna() & comprobarSector()
     }
 
 
     def colocarNumero(fila: Int, columna: Int, num: Int): Boolean = {
-      println(s"(${fila}, ${columna}) -> ${casillasJugadorBin(fila)(columna).toBinaryString}")
       if (!comprobarNumeroValido(fila, columna, num)) {
-        println("dice que numero no valido")
         return false
       }
-      println("ASDASDas")
 
       // se puede colocar
-      //imprimirTableroJugadorBin()
       actualizarFilaColumnaYSector(fila, columna, num, casillasJugadorBin)
-      //imprimirTableroJugadorBin()
 
       casillasJugador(fila)(columna) = num
       true
@@ -400,6 +392,7 @@ object sudoku {
 
       // TODO el bug que provoca desbordamientode memoria puede que este por aqui
       def obtenerSiguienteCasilla(): Array[Int] = {
+        imprimirTablero()
         var iCasilla = 0
         var jCasilla = 0 // fila y columna de la casilla solucion
         var posibilidadesMin = 9 // variable auxiliar con el record del num minimo de posibilidades de una casilla
@@ -416,9 +409,8 @@ object sudoku {
           contador
         }
 
-        val tableroAux: Array[Array[Int]] = Array.ofDim[Int](9, 9)
-        for (i <- tableroAux.indices) {
-          for (j <- tableroAux(i).indices) {
+        for (i <- casillas.indices) {
+          for (j <- casillas(i).indices) {
             val numero: Int = casillas(i)(j)
             var suma = 10
             if (numero != 1 &&
@@ -461,10 +453,10 @@ object sudoku {
         // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
         var mascara = scala.math.pow(2, rand.nextInt(9)).asInstanceOf[Int]
         var valido = false
-        var contadorVueltas: Int = 0 // por algun motivo, a veces no se consigue inicializar el tablero
-        // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
 
-        // TODO el bug que provoca desbordamientode memoria puede que este por aqui
+        var contadorVueltas: Int = 0
+        // por algun motivo, a veces no se consigue inicializar el tablero
+        // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
         while (!valido) {
           if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
             valido = true
@@ -474,6 +466,8 @@ object sudoku {
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
               contadorVueltas += 1
               if (contadorVueltas > 2) {
+                //imprimirTablero()
+                //return
                 inicializarTablero()
               }
             } else { // es par, roto hacia la derecha en 1
@@ -482,10 +476,9 @@ object sudoku {
           }
         }
         // tengo un numero valido para colocar
-        //casillas(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
+        casillas(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
 
         // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
-        //val numero: Int = deByteAInt(mascara)
         val numero: Int = (mascara)
         actualizarFilaColumnaYSector(i, j, numero, casillas)
       }
