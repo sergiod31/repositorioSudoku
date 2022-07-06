@@ -463,6 +463,8 @@ object sudoku {
         var valido = false
         var contadorVueltas: Int = 0 // por algun motivo, a veces no se consigue inicializar el tablero
         // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
+
+        // TODO el bug que provoca desbordamientode memoria puede que este por aqui
         while (!valido) {
           if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
             valido = true
