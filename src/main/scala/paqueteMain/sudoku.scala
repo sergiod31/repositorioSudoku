@@ -148,7 +148,7 @@ object sudoku {
       tablero.imprimirTableroJugador()
 
       // mientras la partida continue:
-      while (!tablero.comprobarVictoria()) {
+      while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
         // pido (i, j)
         var casilla: Array[Int] = pedirFilaColumnaNum()
 
@@ -427,12 +427,14 @@ object sudoku {
       scala.math.pow(2, num - 1).asInstanceOf[Int]
     }
 
-    // TODO rehacer
     def comprobarVictoria(tablero: Array[Array[Int]]): Boolean = {
       // busco horizontalmente
       for (i <- 0 until 9) {
         val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
         for (j <- 0 until 9) {
+          if (tablero(i)(j) == 0) {
+            return false
+          }
           mapa += (tablero(i)(j) -> j)
         }
         // si hay menos de 9 elementos, es que hay alguno repetido
@@ -444,6 +446,9 @@ object sudoku {
       for (j <- 0 until 9) {
         val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
         for (i <- 0 until 9) {
+          if (tablero(i)(j) == 0) {
+            return false
+          }
           mapa += (tablero(i)(j) -> i)
         }
         // si hay menos de 9 elementos, es que hay alguno repetido
@@ -454,10 +459,20 @@ object sudoku {
 
       // busco en cada sector
       for (sector <- 0 until 9) {
-        for (i <- sector ) {
-
+        val mapa: mutable.HashMap[Int, (Int, Int)] = mutable.HashMap()
+        for (i <- (sector / 3 * 3) until (sector / 3 * 3) + 3) {
+          for (j <- (sector % 3 * 3) until (sector % 3 * 3 + 3)) {
+            if (tablero(i)(j) == 0) {
+              return false
+            }
+            mapa += (tablero(i)(j) -> (i, j))
+          }
+        }
+        if (mapa.size < 9) {
+          return false
         }
       }
+      true
     }
 
     // false -> derrota
