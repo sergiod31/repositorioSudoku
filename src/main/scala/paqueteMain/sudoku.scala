@@ -317,8 +317,8 @@ object sudoku {
     // obtiene, de una fila + columna, a que sector pertenece
     // va de [0 - 2]
     def getSector(fila: Int, columna: Int): Int = {
-      //(fila / 3) + ((columna / 3) * 3)
-      ((fila / 3) * 3) + (columna / 3)
+      (fila / 3) + ((columna / 3) * 3)
+      //((fila / 3) * 3) + (columna / 3)
     }
 
     // tablero en contador binario!
