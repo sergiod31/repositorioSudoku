@@ -161,7 +161,7 @@ object sudoku {
         tablero.imprimirTableroJugador()
 
         // compruebo ha llegado a un callejon sin salida
-        if (!tablero.comprobarDerrota()) {
+        if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
           // ha perdido
           println("No se puede continuar")
           println("")
@@ -265,48 +265,98 @@ object sudoku {
         tablero
       }
 
-      def test_deByteAInt(): Unit = {
+      /////////////////////////////////////////////
 
+      def test_deByteAInt(): Boolean = {
+        val numeros: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
+        val soluciones: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+        val resultados: Array[Int] = Array()
+
+        for (i <- numeros.indices) {
+          resultados(i) = tablero.deByteAInt(numeros(i))
+        }
+
+        for (i <- soluciones.indices) {
+          if (soluciones(i) != resultados(i)) {
+            return false
+          }
+        }
+        true
       }
 
-      def test_deIntAByte() {
+      def test_deIntAByte(): Boolean = {
+        val numeros: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        val soluciones: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
 
+        val resultados: Array[Int] = Array()
+
+        for (i <- numeros.indices) {
+          resultados(i) = tablero.deIntAByte(numeros(i))
+        }
+
+        for (i <- soluciones.indices) {
+          if (soluciones(i) != resultados(i)) {
+            return false
+          }
+        }
+        true
       }
 
-      def test_comprobarVictoria(): Unit = {
-
+      def test_comprobarVictoria(): Boolean = {
+        tablero.comprobarVictoria(crearTableroTest())
       }
 
-      def test_comprobarDerrota(): Unit = {
-
+      def test_comprobarDerrota(): Boolean = {
+        false
       }
 
-      def test_comprobarNumeroValido(): Unit = {
-
+      def test_comprobarNumeroValido(): Boolean = {
+        false
       }
 
-      def test_colocarNumero(): Unit = {
-
+      def test_colocarNumero(): Boolean = {
+        false
       }
 
-      def test_getSector(): Unit = {
+      def test_getSector(): Boolean = {
+        val solucionesTest: Array[Int] = Array(0, 0, 0, 1, 2, 3, 4, 5, 5, 6, 7, 8)
+        val resultados: Array[Int] = Array()
 
+        //                                         0       0      0        1       2       3       4       5       5       6       7       8
+        val casillas: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 1), (3, 0), (6, 0), (0, 3), (3, 3), (3, 6), (3, 8), (6, 0), (6, 3), (6, 6))
+
+        for (i <- casillas.indices) {
+          resultados(i) = tablero.getSector(casillas(i)._1, casillas(i)._2)
+        }
+
+        for (i <- resultados.indices) {
+          if (resultados(i) != solucionesTest(i)) {
+            return false
+          }
+        }
+        true
       }
 
-      def test_actualizarFilaColumnaYSector(): Unit = {
-
+      def test_actualizarFilaColumnaYSector(): Boolean = {
+        false
       }
 
-      def test_inicializarTablero(): Unit = {
-
+      def test_inicializarTablero(): Boolean = {
+        false
       }
 
-      def test_inicializarTableroJugador(): Unit = {
-
+      def test_inicializarTableroJugador(): Boolean = {
+        false
       }
 
-      def test_traducirTablero(): Unit = {
-        
+      def test_traducirTablero(): Boolean = {
+        val tabla: Array[Array[Int]] = crearTableroTest()
+        val tablaBin: Array[Array[Int]] = crearTableroBinTest()
+
+        val tablaTest: Array[Array[Int]] = tablero.traducirTablero(tablaBin)
+
+        tablaTest sameElements tabla
       }
     }
 
@@ -377,20 +427,43 @@ object sudoku {
       scala.math.pow(2, num - 1).asInstanceOf[Int]
     }
 
-    //
-    def comprobarVictoria(): Boolean = {
-      for (i <- 0 until 9; j <- 0 until 9) {
-        if (casillasJugador(i)(j) != casillas(i)(j)) {
+    // TODO rehacer
+    def comprobarVictoria(tablero: Array[Array[Int]]): Boolean = {
+      // busco horizontalmente
+      for (i <- 0 until 9) {
+        val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
+        for (j <- 0 until 9) {
+          mapa += (tablero(i)(j) -> j)
+        }
+        // si hay menos de 9 elementos, es que hay alguno repetido
+        if (mapa.size < 9) {
           return false
         }
       }
-      true
+      // busco verticalmente
+      for (j <- 0 until 9) {
+        val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
+        for (i <- 0 until 9) {
+          mapa += (tablero(i)(j) -> i)
+        }
+        // si hay menos de 9 elementos, es que hay alguno repetido
+        if (mapa.size < 9) {
+          return false
+        }
+      }
+
+      // busco en cada sector
+      for (sector <- 0 until 9) {
+        for (i <- sector ) {
+
+        }
+      }
     }
 
     // false -> derrota
-    def comprobarDerrota(): Boolean = {
-      for (i <- casillasJugadorBin.indices; j <- casillasJugadorBin(i).indices) {
-        if (casillasJugadorBin(i)(j) == 0) {
+    def comprobarDerrota(tablero: Array[Array[Int]]): Boolean = {
+      for (i <- tablero.indices; j <- tablero(i).indices) {
+        if (tablero(i)(j) == 0) {
           return false
         }
       }
