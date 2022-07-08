@@ -18,11 +18,6 @@ object sudoku {
     val tablero = new Tablero
     val dificultadMaxima = 75
 
-    val casillasTest: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 2), (0, 3), (3, 3), (3, 6), (6, 6), (7, 0))
-    for (i <- casillasTest.indices) {
-      println(s"${casillasTest(i).toString()} -> sector: ${tablero.getSector(casillasTest(i)._1, casillasTest(i)._2)}")
-    }
-
 
     def jugar(): Unit = {
       tablero.inicializarTablero()
@@ -153,7 +148,7 @@ object sudoku {
         var casilla: Array[Int] = pedirFilaColumnaNum()
 
         // intento colocar el numero pedido
-        while (!tablero.colocarNumero(casilla(0), casilla(1), casilla(2))) {
+        while (!tablero.colocarNumero(tablero.casillasJugador, tablero.casillasJugadorBin, casilla(0), casilla(1), casilla(2))) {
           println("No se puede colocar ese número, intente con otro o en otra casilla")
           casilla = pedirFilaColumnaNum()
         }
@@ -174,192 +169,311 @@ object sudoku {
 
     //jugar()
 
+
+    val test = new Test
+    test.ejecutarTest()
+
+
     ////////////////////////////////////////////////////////////////////////////
 
-    class Test {
-      def crearTableroTest(): Array[Array[Int]] = {
-        val tablero: Array[Array[Int]] = Array.ofDim[Int](9, 9)
 
-        val fila0: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-        val fila1: Array[Int] = Array(7, 8, 9, 1, 2, 3, 4, 5, 6)
-        val fila2: Array[Int] = Array(4, 5, 6, 7, 8, 9, 1, 2, 3)
-        val fila3: Array[Int] = Array(2, 3, 1, 5, 6, 4, 8, 9, 7)
-        val fila4: Array[Int] = Array(8, 9, 7, 2, 3, 1, 5, 6, 4)
-        val fila5: Array[Int] = Array(5, 6, 4, 8, 9, 7, 2, 3, 1)
-        val fila6: Array[Int] = Array(3, 1, 2, 6, 4, 5, 9, 7, 8)
-        val fila7: Array[Int] = Array(9, 7, 8, 3, 1, 2, 6, 4, 5)
-        val fila8: Array[Int] = Array(6, 4, 5, 9, 7, 8, 3, 1, 2)
+  }
 
-        for (i <- fila0.indices) {
-          tablero(0)(i) = fila0(i)
-        }
-        for (i <- fila1.indices) {
-          tablero(1)(i) = fila1(i)
-        }
-        for (i <- fila2.indices) {
-          tablero(2)(i) = fila2(i)
-        }
-        for (i <- fila3.indices) {
-          tablero(3)(i) = fila3(i)
-        }
-        for (i <- fila4.indices) {
-          tablero(4)(i) = fila4(i)
-        }
-        for (i <- fila5.indices) {
-          tablero(5)(i) = fila5(i)
-        }
-        for (i <- fila6.indices) {
-          tablero(6)(i) = fila6(i)
-        }
-        for (i <- fila7.indices) {
-          tablero(7)(i) = fila7(i)
-        }
-        for (i <- fila8.indices) {
-          tablero(8)(i) = fila8(i)
-        }
+  class Test {
+    def tablero: Tablero = new Tablero
 
-        tablero
+    def crearTableroTest(): Array[Array[Int]] = {
+      val tablero: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+
+      val fila0: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      val fila1: Array[Int] = Array(7, 8, 9, 1, 2, 3, 4, 5, 6)
+      val fila2: Array[Int] = Array(4, 5, 6, 7, 8, 9, 1, 2, 3)
+      val fila3: Array[Int] = Array(2, 3, 1, 5, 6, 4, 8, 9, 7)
+      val fila4: Array[Int] = Array(8, 9, 7, 2, 3, 1, 5, 6, 4)
+      val fila5: Array[Int] = Array(5, 6, 4, 8, 9, 7, 2, 3, 1)
+      val fila6: Array[Int] = Array(3, 1, 2, 6, 4, 5, 9, 7, 8)
+      val fila7: Array[Int] = Array(9, 7, 8, 3, 1, 2, 6, 4, 5)
+      val fila8: Array[Int] = Array(6, 4, 5, 9, 7, 8, 3, 1, 2)
+
+      for (i <- fila0.indices) {
+        tablero(0)(i) = fila0(i)
+      }
+      for (i <- fila1.indices) {
+        tablero(1)(i) = fila1(i)
+      }
+      for (i <- fila2.indices) {
+        tablero(2)(i) = fila2(i)
+      }
+      for (i <- fila3.indices) {
+        tablero(3)(i) = fila3(i)
+      }
+      for (i <- fila4.indices) {
+        tablero(4)(i) = fila4(i)
+      }
+      for (i <- fila5.indices) {
+        tablero(5)(i) = fila5(i)
+      }
+      for (i <- fila6.indices) {
+        tablero(6)(i) = fila6(i)
+      }
+      for (i <- fila7.indices) {
+        tablero(7)(i) = fila7(i)
+      }
+      for (i <- fila8.indices) {
+        tablero(8)(i) = fila8(i)
       }
 
-      def crearTableroBinTest(): Array[Array[Int]] = {
-        val tablero: Array[Array[Int]] = Array.ofDim[Int](9, 9)
-
-        val fila0: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
-        val fila1: Array[Int] = Array(64, 128, 256, 1, 2, 4, 8, 16, 32)
-        val fila2: Array[Int] = Array(8, 16, 32, 64, 128, 259, 1, 2, 4)
-        val fila3: Array[Int] = Array(2, 4, 1, 16, 32, 8, 128, 256, 64)
-        val fila4: Array[Int] = Array(128, 256, 64, 2, 4, 1, 16, 32, 8)
-        val fila5: Array[Int] = Array(16, 32, 8, 128, 256, 64, 2, 4, 1)
-        val fila6: Array[Int] = Array(4, 1, 2, 32, 8, 16, 256, 64, 128)
-        val fila7: Array[Int] = Array(256, 64, 128, 4, 1, 2, 32, 8, 16)
-        val fila8: Array[Int] = Array(32, 8, 16, 256, 64, 128, 4, 1, 2)
-
-        for (i <- fila0.indices) {
-          tablero(0)(i) = fila0(i)
-        }
-        for (i <- fila1.indices) {
-          tablero(1)(i) = fila1(i)
-        }
-        for (i <- fila2.indices) {
-          tablero(2)(i) = fila2(i)
-        }
-        for (i <- fila3.indices) {
-          tablero(3)(i) = fila3(i)
-        }
-        for (i <- fila4.indices) {
-          tablero(4)(i) = fila4(i)
-        }
-        for (i <- fila5.indices) {
-          tablero(5)(i) = fila5(i)
-        }
-        for (i <- fila6.indices) {
-          tablero(6)(i) = fila6(i)
-        }
-        for (i <- fila7.indices) {
-          tablero(7)(i) = fila7(i)
-        }
-        for (i <- fila8.indices) {
-          tablero(8)(i) = fila8(i)
-        }
-
-        tablero
-      }
-
-      /////////////////////////////////////////////
-
-      def test_deByteAInt(): Boolean = {
-        val numeros: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
-        val soluciones: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-
-        val resultados: Array[Int] = Array()
-
-        for (i <- numeros.indices) {
-          resultados(i) = tablero.deByteAInt(numeros(i))
-        }
-
-        for (i <- soluciones.indices) {
-          if (soluciones(i) != resultados(i)) {
-            return false
-          }
-        }
-        true
-      }
-
-      def test_deIntAByte(): Boolean = {
-        val numeros: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
-        val soluciones: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
-
-        val resultados: Array[Int] = Array()
-
-        for (i <- numeros.indices) {
-          resultados(i) = tablero.deIntAByte(numeros(i))
-        }
-
-        for (i <- soluciones.indices) {
-          if (soluciones(i) != resultados(i)) {
-            return false
-          }
-        }
-        true
-      }
-
-      def test_comprobarVictoria(): Boolean = {
-        tablero.comprobarVictoria(crearTableroTest())
-      }
-
-      def test_comprobarDerrota(): Boolean = {
-        false
-      }
-
-      def test_comprobarNumeroValido(): Boolean = {
-        false
-      }
-
-      def test_colocarNumero(): Boolean = {
-        false
-      }
-
-      def test_getSector(): Boolean = {
-        val solucionesTest: Array[Int] = Array(0, 0, 0, 1, 2, 3, 4, 5, 5, 6, 7, 8)
-        val resultados: Array[Int] = Array()
-
-        //                                         0       0      0        1       2       3       4       5       5       6       7       8
-        val casillas: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 1), (3, 0), (6, 0), (0, 3), (3, 3), (3, 6), (3, 8), (6, 0), (6, 3), (6, 6))
-
-        for (i <- casillas.indices) {
-          resultados(i) = tablero.getSector(casillas(i)._1, casillas(i)._2)
-        }
-
-        for (i <- resultados.indices) {
-          if (resultados(i) != solucionesTest(i)) {
-            return false
-          }
-        }
-        true
-      }
-
-      def test_actualizarFilaColumnaYSector(): Boolean = {
-        false
-      }
-
-      def test_inicializarTablero(): Boolean = {
-        false
-      }
-
-      def test_inicializarTableroJugador(): Boolean = {
-        false
-      }
-
-      def test_traducirTablero(): Boolean = {
-        val tabla: Array[Array[Int]] = crearTableroTest()
-        val tablaBin: Array[Array[Int]] = crearTableroBinTest()
-
-        val tablaTest: Array[Array[Int]] = tablero.traducirTablero(tablaBin)
-
-        tablaTest sameElements tabla
-      }
+      tablero
     }
 
+    def crearTableroBinTest(): Array[Array[Int]] = {
+      val tablero: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+
+      val fila0: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
+      val fila1: Array[Int] = Array(64, 128, 256, 1, 2, 4, 8, 16, 32)
+      val fila2: Array[Int] = Array(8, 16, 32, 64, 128, 259, 1, 2, 4)
+      val fila3: Array[Int] = Array(2, 4, 1, 16, 32, 8, 128, 256, 64)
+      val fila4: Array[Int] = Array(128, 256, 64, 2, 4, 1, 16, 32, 8)
+      val fila5: Array[Int] = Array(16, 32, 8, 128, 256, 64, 2, 4, 1)
+      val fila6: Array[Int] = Array(4, 1, 2, 32, 8, 16, 256, 64, 128)
+      val fila7: Array[Int] = Array(256, 64, 128, 4, 1, 2, 32, 8, 16)
+      val fila8: Array[Int] = Array(32, 8, 16, 256, 64, 128, 4, 1, 2)
+
+      for (i <- fila0.indices) {
+        tablero(0)(i) = fila0(i)
+      }
+      for (i <- fila1.indices) {
+        tablero(1)(i) = fila1(i)
+      }
+      for (i <- fila2.indices) {
+        tablero(2)(i) = fila2(i)
+      }
+      for (i <- fila3.indices) {
+        tablero(3)(i) = fila3(i)
+      }
+      for (i <- fila4.indices) {
+        tablero(4)(i) = fila4(i)
+      }
+      for (i <- fila5.indices) {
+        tablero(5)(i) = fila5(i)
+      }
+      for (i <- fila6.indices) {
+        tablero(6)(i) = fila6(i)
+      }
+      for (i <- fila7.indices) {
+        tablero(7)(i) = fila7(i)
+      }
+      for (i <- fila8.indices) {
+        tablero(8)(i) = fila8(i)
+      }
+
+      tablero
+    }
+
+    /////////////////////////////////////////////
+
+    // funciona
+    def test_deByteAInt(): Boolean = {
+      val numeros: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
+      val soluciones: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+      val resultados: Array[Int] = new Array[Int](9)
+
+      for (i <- numeros.indices) {
+        resultados(i) = tablero.deByteAInt(numeros(i))
+      }
+
+      for (i <- soluciones.indices) {
+        if (soluciones(i) != resultados(i)) {
+          return false
+        }
+      }
+      true
+    }
+
+    // funciona
+    def test_deIntAByte(): Boolean = {
+      val numeros: Array[Int] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      val soluciones: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
+
+      val resultados: Array[Int] = new Array[Int](9)
+
+      for (i <- numeros.indices) {
+        resultados(i) = tablero.deIntAByte(numeros(i))
+      }
+
+      for (i <- soluciones.indices) {
+        if (soluciones(i) != resultados(i)) {
+          return false
+        }
+      }
+      true
+    }
+
+    // funciona
+    def test_comprobarVictoria(): Boolean = {
+      var tablero1: Array[Array[Int]] = crearTableroTest()
+      var tablero2: Array[Array[Int]] = crearTableroTest()
+      tablero2(0)(0) = 0
+
+      tablero.comprobarVictoria(tablero1) && !tablero.comprobarVictoria(tablero2)
+    }
+
+    // funciona
+    def test_comprobarDerrota(): Boolean = {
+      val tableroTest: Array[Array[Int]] = crearTableroBinTest()
+      val tableroTest2: Array[Array[Int]] = crearTableroBinTest()
+      tableroTest(0)(0) = 0
+
+      !tablero.comprobarDerrota(tableroTest) && tablero.comprobarDerrota(tableroTest2)
+    }
+
+    // funciona
+    def test_comprobarNumeroValido(): Boolean = {
+      val tablaTest: Array[Array[Int]] = crearTableroBinTest()
+      val tablaTest2: Array[Array[Int]] = crearTableroBinTest()
+      val tablaTest3: Array[Array[Int]] = crearTableroBinTest()
+
+      tablaTest(0)(0) = 1
+      tablaTest2(0)(0) = 3
+      tablaTest3(0)(0) = 2
+
+      if (tablero.comprobarNumeroValido(tablaTest, 0, 0, 1) &&
+        tablero.comprobarNumeroValido(tablaTest2, 0, 0, 1) &&
+        !tablero.comprobarNumeroValido(tablaTest2, 0, 0, 1)) {
+        return true
+      }
+      false
+    }
+
+    def test_colocarNumero(): Boolean = {
+      val tableroTest: Array[Array[Int]] = crearTableroTest()
+      val tableroBinTest: Array[Array[Int]] = crearTableroBinTest()
+
+      val tableroTest2: Array[Array[Int]] = crearTableroTest()
+
+      tableroTest(0)(0) = 0
+      tableroBinTest(0)(0) = 1
+
+      val correcto1: Boolean = tablero.colocarNumero(tableroTest, tableroBinTest, 0, 0, 1)
+
+      if (correcto1) {
+        return true
+      }
+      false
+    }
+
+    // funciona
+    def test_getSector(): Boolean = {
+      val solucionesTest: Array[Int] = Array(0, 0, 0, 3, 2, 1, 4, 5, 5, 6, 7, 8)
+      val resultados: Array[Int] = new Array[Int](12)
+
+      //                                         0       0      0        3       2       1       4       5       5       6       7       8
+      val casillas: Array[(Int, Int)] = Array((0, 0), (0, 1), (0, 2), (3, 0), (0, 6), (0, 3), (3, 3), (3, 6), (3, 8), (6, 0), (6, 3), (6, 6))
+
+      for (i <- casillas.indices) {
+        resultados(i) = tablero.getSector(casillas(i)._1, casillas(i)._2)
+      }
+      for (i <- resultados.indices) {
+        if (resultados(i) != solucionesTest(i)) {
+          return false
+        }
+      }
+      true
+    }
+
+    def test_actualizarFilaColumnaYSector(): Boolean = {
+      false
+    }
+
+    def test_inicializarTablero(): Boolean = {
+      false
+    }
+
+    def test_inicializarTableroJugador(): Boolean = {
+      false
+    }
+
+    def test_traducirTablero(): Boolean = {
+      val tabla: Array[Array[Int]] = crearTableroTest()
+      val tablaBin: Array[Array[Int]] = crearTableroBinTest()
+
+      val tablaTest: Array[Array[Int]] = tablero.traducirTablero(tablaBin)
+
+      tablaTest sameElements tabla
+    }
+
+    def ejecutarTest() {
+
+      println("PASANDO TESTS:")
+      println("")
+      print("test_deByteAInt: ")
+      if (test_deByteAInt()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_deIntAByte: ")
+      if (test_deIntAByte()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_comprobarVictoria: ")
+      if (test_comprobarVictoria()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_comprobarDerrota: ")
+      if (test_comprobarDerrota()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_comprobarNumeroValido: ")
+      if (test_comprobarNumeroValido()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_colocarNumero: ")
+      if (test_colocarNumero()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_getSector: ")
+      if (test_getSector()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_actualizarFilaColumnaYSector: ")
+      if (test_actualizarFilaColumnaYSector()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_inicializarTablero: ")
+      if (test_inicializarTablero()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_inicializarTableroJugador: ")
+      if (test_inicializarTableroJugador()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+      print("test_traducirTablero: ")
+      if (test_traducirTablero()) {
+        println("TRUE")
+      } else {
+        println("FALSE <<<<<<<<<<<<<<<<<<<")
+      }
+    }
   }
 
   class Tablero {
@@ -485,61 +599,31 @@ object sudoku {
       true
     }
 
-    def comprobarNumeroValido(fila: Int, columna: Int, num: Int): Boolean = {
-      if (casillasJugador(fila)(columna) != 0) {
-        return false
+    // la tabla que se le pasa es "bin"
+    def comprobarNumeroValido(tablaBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+      if ((tablaBin(fila)(columna) & deIntAByte(num)) > 0) {
+        return true
       }
-
-      def comprobarFila(): Boolean = {
-        for (j <- casillasJugador(fila).indices) {
-          if (casillasJugador(fila)(j) == num) {
-            return false
-          }
-        }
-        true
-      }
-
-      def comprobarColumna(): Boolean = {
-        for (i <- casillasJugador.indices) {
-          if (casillasJugador(i)(columna) == num) {
-            return false
-          }
-        }
-        true
-      }
-
-      def comprobarSector(): Boolean = {
-        val sector: Int = getSector(fila, columna)
-        for (i <- sector % 3 to sector % 3 + 2;
-             j <- sector / 3 to sector / 3 + 2) {
-          if (casillasJugador(i)(j) == num) {
-            return false
-          }
-        }
-        true
-      }
-
-      comprobarFila() & comprobarColumna() & comprobarSector()
+      false
     }
 
-
-    def colocarNumero(fila: Int, columna: Int, num: Int): Boolean = {
-      if (!comprobarNumeroValido(fila, columna, num)) {
+    // comprueba si se puede colocar el numero, actualiza el tablero en contador binario y actualiza el tablero
+    def colocarNumero(tablero: Array[Array[Int]], tableroBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+      if (!comprobarNumeroValido(tableroBin, fila, columna, num)) {
         return false
       }
 
       // se puede colocar
-      actualizarFilaColumnaYSector(fila, columna, num, casillasJugadorBin)
+      actualizarFilaColumnaYSector(fila, columna, num, tableroBin)
 
-      casillasJugador(fila)(columna) = num
+      tablero(fila)(columna) = num
       true
     }
 
     // obtiene, de una fila + columna, a que sector pertenece
-    // va de [0 - 2]
+    // va de [0 - 8]
     def getSector(fila: Int, columna: Int): Int = {
-      (fila / 3) + ((columna / 3) * 3)
-      //((fila / 3) * 3) + (columna / 3)
+      ((fila / 3) * 3) + (columna / 3)
     }
 
     // tablero en contador binario!
@@ -559,8 +643,6 @@ object sudoku {
         }
         false
       }
-
-
       // actualizo la fila
       for (j <- tablero(fila).indices) { // recorro la fila pedida
         // me salto la casilla objetivo original
