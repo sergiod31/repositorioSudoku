@@ -144,6 +144,7 @@ object sudoku {
 
       // mientras la partida continue:
       while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
+
         // pido (i, j)
         var casilla: Array[Int] = pedirFilaColumnaNum()
 
@@ -152,11 +153,13 @@ object sudoku {
           println("No se puede colocar ese número, intente con otro o en otra casilla")
           casilla = pedirFilaColumnaNum()
         }
+
         // he colocado un nuevo numero
         tablero.imprimirTableroJugador(tablero.casillasJugador)
 
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
+
           // ha perdido
           println("No se puede continuar")
           println("")
@@ -167,8 +170,8 @@ object sudoku {
       pedirNuevaPartida()
     }
 
+    //
     //jugar()
-
 
     val test = new Test
     test.ejecutarTest()
@@ -231,7 +234,7 @@ object sudoku {
 
       val fila0: Array[Int] = Array(1, 2, 4, 8, 16, 32, 64, 128, 256)
       val fila1: Array[Int] = Array(64, 128, 256, 1, 2, 4, 8, 16, 32)
-      val fila2: Array[Int] = Array(8, 16, 32, 64, 128, 259, 1, 2, 4)
+      val fila2: Array[Int] = Array(8, 16, 32, 64, 128, 256, 1, 2, 4)
       val fila3: Array[Int] = Array(2, 4, 1, 16, 32, 8, 128, 256, 64)
       val fila4: Array[Int] = Array(128, 256, 64, 2, 4, 1, 16, 32, 8)
       val fila5: Array[Int] = Array(16, 32, 8, 128, 256, 64, 2, 4, 1)
@@ -427,13 +430,20 @@ object sudoku {
       false
     }
 
+    // funciona
     def test_traducirTablero(): Boolean = {
       val tabla: Array[Array[Int]] = crearTableroTest()
       val tablaBin: Array[Array[Int]] = crearTableroBinTest()
 
       val tablaTest: Array[Array[Int]] = tablero.traducirTablero(tablaBin)
 
-      tablaTest sameElements tabla
+      for (i <- tabla.indices; j <- tabla(i).indices) {
+        if (tabla(i)(j) != tablaTest(i)(j)) {
+          print(s"\n\t(${i})(${j}) -> tabla: ${tabla(i)(j)}, tablaTest: ${tablaTest(i)(j)}\t\t")
+          return false
+        }
+      }
+      true
     }
 
     def ejecutarTest() {
