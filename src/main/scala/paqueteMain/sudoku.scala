@@ -20,7 +20,7 @@ object sudoku {
 
 
     def jugar(): Unit = {
-      tablero.inicializarTablero()
+      tablero.inicializarTablero(tablero.casillasJugador)
 
       println("")
       println("")
@@ -140,7 +140,7 @@ object sudoku {
 
       // inicializo tableros
       tablero.inicializarTableroJugador(dificultad)
-      tablero.imprimirTableroJugador()
+      tablero.imprimirTableroJugador(tablero.casillasJugador)
 
       // mientras la partida continue:
       while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
@@ -153,7 +153,7 @@ object sudoku {
           casilla = pedirFilaColumnaNum()
         }
         // he colocado un nuevo numero
-        tablero.imprimirTableroJugador()
+        tablero.imprimirTableroJugador(tablero.casillasJugador)
 
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
@@ -340,12 +340,13 @@ object sudoku {
 
       if (tablero.comprobarNumeroValido(tablaTest, 0, 0, 1) &&
         tablero.comprobarNumeroValido(tablaTest2, 0, 0, 1) &&
-        !tablero.comprobarNumeroValido(tablaTest2, 0, 0, 1)) {
+        !tablero.comprobarNumeroValido(tablaTest3, 0, 0, 1)) {
         return true
       }
       false
     }
 
+    // funciona
     def test_colocarNumero(): Boolean = {
       val tableroTest: Array[Array[Int]] = crearTableroTest()
       val tableroBinTest: Array[Array[Int]] = crearTableroBinTest()
@@ -382,8 +383,40 @@ object sudoku {
       true
     }
 
+    // funciona
     def test_actualizarFilaColumnaYSector(): Boolean = {
-      false
+      val tableroBinTest: Array[Array[Int]] = Array.ofDim[Int](9, 9) // test del metodo
+      val tableroBinTest2: Array[Array[Int]] = Array.ofDim[Int](9, 9) // objetivo
+      //
+      for (i <- tableroBinTest.indices; j <- tableroBinTest(i).indices) {
+        tableroBinTest(i)(j) = 511
+        tableroBinTest2(i)(j) = 511
+      }
+
+      tableroBinTest2(0)(0) = 511
+      tableroBinTest2(0)(1) -= 1
+      tableroBinTest2(0)(2) -= 1
+      tableroBinTest2(1)(0) -= 1
+      tableroBinTest2(1)(1) -= 1
+      tableroBinTest2(1)(2) -= 1
+      tableroBinTest2(2)(0) -= 1
+      tableroBinTest2(2)(1) -= 1
+      tableroBinTest2(2)(2) -= 1
+      //
+      for (j <- 3 until 9) {
+        tableroBinTest2(0)(j) -= 1
+        tableroBinTest2(j)(0) -= 1
+      }
+
+      tablero.actualizarFilaColumnaYSector(0, 0, 1, tableroBinTest)
+
+      for (i <- tableroBinTest.indices; j <- tableroBinTest(i).indices) {
+        if (tableroBinTest(i)(j) != tableroBinTest2(i)(j)) {
+          print(s"\n\t(${i})(${j}) -> tableroBinTest: ${tableroBinTest(i)(j)}, tableroBinTest2: ${tableroBinTest2(i)(j)}\t\t")
+          return false
+        }
+      }
+      true
     }
 
     def test_inicializarTablero(): Boolean = {
@@ -626,7 +659,7 @@ object sudoku {
       ((fila / 3) * 3) + (columna / 3)
     }
 
-    // tablero en contador binario!
+    // el tablero en contador binario!
     def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int, tablero: Array[Array[Int]]): Unit = {
 
       def esNumeroFinal(numero: Int): Boolean = {
@@ -643,9 +676,10 @@ object sudoku {
         }
         false
       }
+
       // actualizo la fila
       for (j <- tablero(fila).indices) { // recorro la fila pedida
-        // me salto la casilla objetivo original
+        // me salto la casilla objetivo original y los numeros ya finales
         if (j != columna && ((tablero(fila)(j) & num) > 0)) {
           tablero(fila)(j) -= num
 
@@ -657,7 +691,7 @@ object sudoku {
       }
       // actualizo la columna
       for (i <- tablero.indices) { // recorro la columna pedida
-        // me salto la casilla objetivo original
+        // me salto la casilla objetivo original y los numeros ya finales
         if (i != fila && ((tablero(i)(columna) & num) > 0)) {
           tablero(i)(columna) -= num
 
@@ -671,8 +705,11 @@ object sudoku {
       // actualizo el sector
       // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
       val sector: Int = getSector(fila, columna)
+
       for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
         for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+
+          // me salto la casilla objetivo original, toda la fila, la columna y los numeros ya finales
           if (i != fila && j != columna && ((tablero(i)(j) & num) > 0)) {
             tablero(i)(j) -= num
 
@@ -688,13 +725,13 @@ object sudoku {
     /*
      * genero los 81 numeros para el tablero
      */
-    def inicializarTablero(): Unit = {
+    def inicializarTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
       val rand = scala.util.Random
 
       // relleno tablero de '111 111 111'
-      for (i <- casillas.indices) {
-        for (j <- casillas(i).indices) {
-          casillas(i)(j) = 511
+      for (i <- tablero.indices) {
+        for (j <- tablero(i).indices) {
+          tablero(i)(j) = 511
         }
       }
 
@@ -745,15 +782,15 @@ object sudoku {
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
         // me aseguro que la casilla no estaba ya inicializada
-        if (casillas(i)(j) == 1 ||
-          casillas(i)(j) == 2 ||
-          casillas(i)(j) == 4 ||
-          casillas(i)(j) == 8 ||
-          casillas(i)(j) == 16 ||
-          casillas(i)(j) == 32 ||
-          casillas(i)(j) == 64 ||
-          casillas(i)(j) == 128 ||
-          casillas(i)(j) == 256) {
+        if (tablero(i)(j) == 1 ||
+          tablero(i)(j) == 2 ||
+          tablero(i)(j) == 4 ||
+          tablero(i)(j) == 8 ||
+          tablero(i)(j) == 16 ||
+          tablero(i)(j) == 32 ||
+          tablero(i)(j) == 64 ||
+          tablero(i)(j) == 128 ||
+          tablero(i)(j) == 256) {
           return
         }
 
@@ -766,9 +803,9 @@ object sudoku {
         // por algun motivo, a veces no se consigue inicializar el tablero
         // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
         while (!valido) {
-          if ((casillas(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
+          if ((tablero(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
             valido = true
-            casillas(i)(j) = mascara
+            tablero(i)(j) = mascara
           } else {
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
@@ -776,7 +813,7 @@ object sudoku {
               if (contadorVueltas > 2) {
                 //imprimirTablero()
                 //return
-                inicializarTablero()
+                inicializarTablero(tablero)
               }
             } else { // es par, roto hacia la derecha en 1
               mascara >>= 1
@@ -784,11 +821,11 @@ object sudoku {
           }
         }
         // tengo un numero valido para colocar
-        casillas(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
+        tablero(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
 
         // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
         val numero: Int = (mascara)
-        actualizarFilaColumnaYSector(i, j, numero, casillas)
+        actualizarFilaColumnaYSector(i, j, numero, tablero)
       }
 
       /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -823,6 +860,7 @@ object sudoku {
         val sig = obtenerSiguienteCasilla()
         inicializarCasilla(sig(0), sig(1))
       }
+      tablero
     }
 
     def inicializarTableroJugador(dificultad: Int): Unit = {
@@ -895,13 +933,13 @@ object sudoku {
       println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
     }
 
-    def imprimirTableroJugador(): Unit = {
-      val tablero: Array[Array[String]] = Array.ofDim[String](9, 9)
+    def imprimirTableroJugador(tablero: Array[Array[Int]]): Unit = {
+      val tableroAux: Array[Array[String]] = Array.ofDim[String](9, 9)
 
-      for (i <- tablero.indices; j <- tablero(i).indices) {
-        tablero(i)(j) = casillasJugador(i)(j).toString
-        if (casillasJugador(i)(j) == 0) {
-          tablero(i)(j) = " "
+      for (i <- tableroAux.indices; j <- tableroAux(i).indices) {
+        tableroAux(i)(j) = tablero(i)(j).toString
+        if (tablero(i)(j) == 0) {
+          tableroAux(i)(j) = " "
         }
       }
       println("")
