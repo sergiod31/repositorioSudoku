@@ -426,7 +426,7 @@ object sudoku {
       println("\n")
       try {
         val tableroTest: Array[Array[Int]] = tablero.inicializarTablero(Array.ofDim[Int](9, 9))
-        tablero.imprimirTableroJugador(tableroTest)
+        // tablero.imprimirTableroJugador(tableroTest)
         if (tablero.comprobarVictoria(tableroTest)) {
           return true
         }
@@ -755,7 +755,6 @@ object sudoku {
       }
 
       def obtenerSiguienteCasilla(): Array[Int] = {
-        imprimirTablero()
         var iCasilla = 0
         var jCasilla = 0
         var posibilidadesMin = 9
@@ -772,9 +771,9 @@ object sudoku {
           contador
         }
 
-        for (i <- tablero.indices) {
-          for (j <- tablero(i).indices) {
-            val numero: Int = tablero(i)(j)
+        for (i <- tableroBin.indices) {
+          for (j <- tableroBin(i).indices) {
+            val numero: Int = tableroBin(i)(j)
             var suma = 10
             if (numero != 1 &&
               numero != 2 &&
@@ -821,11 +820,19 @@ object sudoku {
         // por algun motivo, a veces no se consigue inicializar el tablero
         // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
         while (!valido) {
-          // distinto de 0, el numero esta disponible
+
           if ((tableroBin(i)(j) & mascara) != 0) {
+
+            // distinto de 0, el numero esta disponible
             valido = true
             tableroBin(i)(j) = mascara
+            tablero(i)(j) = deByteAInt(mascara)
+
+            // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
+            val numero: Int = (mascara)
+            actualizarFilaColumnaYSector(i, j, numero, tableroBin)
           } else {
+
             // el numero de la mascara no esta disponible
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
@@ -833,19 +840,15 @@ object sudoku {
               if (contadorVueltas > 2) {
                 //imprimirTablero()
                 //return
-                inicializarTablero(tablero, tableroBin)
+                println("imprimiendo tablero justo antes de volver a intentarlo")
+                imprimirTableroJugador(tableroBin)
+                inicializarTablero(tableroBin)
               }
             } else { // es par, roto hacia la derecha en 1
               mascara >>= 1
             }
           }
         }
-        // tengo un numero valido para colocar
-        tablero(i)(j) = scala.math.pow(2, mascara - 1).asInstanceOf[Int]
-
-        // ahora toca quitar ese numero de las filas, columnas y sectores a los que afecta
-        val numero: Int = (mascara)
-        actualizarFilaColumnaYSector(i, j, numero, tablero)
       }
 
       /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -857,6 +860,7 @@ object sudoku {
       // sector 1
       for (i <- 0 until 3) {
         for (j <- 0 until 3) {
+          println(s"inicializando casilla (${i}, ${j})")
           inicializarCasilla(i, j)
         }
       }
