@@ -315,8 +315,8 @@ object sudoku {
 
     // funciona
     def test_comprobarVictoria(): Boolean = {
-      var tablero1: Array[Array[Int]] = crearTableroTest()
-      var tablero2: Array[Array[Int]] = crearTableroTest()
+      val tablero1: Array[Array[Int]] = crearTableroTest()
+      val tablero2: Array[Array[Int]] = crearTableroTest()
       tablero2(0)(0) = 0
 
       tablero.comprobarVictoria(tablero1) && !tablero.comprobarVictoria(tablero2)
@@ -423,12 +423,21 @@ object sudoku {
     }
 
     def test_inicializarTablero(): Boolean = {
+      println("\n")
+      try {
+        val tableroTest: Array[Array[Int]] = tablero.inicializarTablero(Array.ofDim[Int](9, 9))
+        tablero.imprimirTableroJugador(tableroTest)
+        if (tablero.comprobarVictoria(tableroTest)) {
+          return true
+        }
+      }
       false
     }
 
     def test_inicializarTableroJugador(): Boolean = {
       false
     }
+
 
     // funciona
     def test_traducirTablero(): Boolean = {
@@ -737,14 +746,13 @@ object sudoku {
      */
     def inicializarTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
       val rand = scala.util.Random
-
+      val tableroBin: Array[Array[Int]] = Array.ofDim[Int](9, 9)
       // relleno tablero de '111 111 111'
-      for (i <- tablero.indices) {
-        for (j <- tablero(i).indices) {
-          tablero(i)(j) = 511
+      for (i <- tableroBin.indices) {
+        for (j <- tableroBin(i).indices) {
+          tableroBin(i)(j) = 511
         }
       }
-
 
       def obtenerSiguienteCasilla(): Array[Int] = {
         imprimirTablero()
@@ -764,9 +772,9 @@ object sudoku {
           contador
         }
 
-        for (i <- casillas.indices) {
-          for (j <- casillas(i).indices) {
-            val numero: Int = casillas(i)(j)
+        for (i <- tablero.indices) {
+          for (j <- tablero(i).indices) {
+            val numero: Int = tablero(i)(j)
             var suma = 10
             if (numero != 1 &&
               numero != 2 &&
@@ -792,15 +800,15 @@ object sudoku {
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
         // me aseguro que la casilla no estaba ya inicializada
-        if (tablero(i)(j) == 1 ||
-          tablero(i)(j) == 2 ||
-          tablero(i)(j) == 4 ||
-          tablero(i)(j) == 8 ||
-          tablero(i)(j) == 16 ||
-          tablero(i)(j) == 32 ||
-          tablero(i)(j) == 64 ||
-          tablero(i)(j) == 128 ||
-          tablero(i)(j) == 256) {
+        if (tableroBin(i)(j) == 1 ||
+          tableroBin(i)(j) == 2 ||
+          tableroBin(i)(j) == 4 ||
+          tableroBin(i)(j) == 8 ||
+          tableroBin(i)(j) == 16 ||
+          tableroBin(i)(j) == 32 ||
+          tableroBin(i)(j) == 64 ||
+          tableroBin(i)(j) == 128 ||
+          tableroBin(i)(j) == 256) {
           return
         }
 
@@ -813,17 +821,19 @@ object sudoku {
         // por algun motivo, a veces no se consigue inicializar el tablero
         // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
         while (!valido) {
-          if ((tablero(i)(j) & mascara) != 0) { // distinto de 0, el numero esta disponible
+          // distinto de 0, el numero esta disponible
+          if ((tableroBin(i)(j) & mascara) != 0) {
             valido = true
-            tablero(i)(j) = mascara
+            tableroBin(i)(j) = mascara
           } else {
+            // el numero de la mascara no esta disponible
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
               contadorVueltas += 1
               if (contadorVueltas > 2) {
                 //imprimirTablero()
                 //return
-                inicializarTablero(tablero)
+                inicializarTablero(tablero, tableroBin)
               }
             } else { // es par, roto hacia la derecha en 1
               mascara >>= 1
