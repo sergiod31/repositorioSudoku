@@ -745,6 +745,11 @@ object sudoku {
      * genero los 81 numeros para el tablero
      */
     def inicializarTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
+
+      for (i <- tablero.indices; j <- tablero(i).indices) {
+        tablero(i)(j) = 0
+      }
+
       val rand = scala.util.Random
       val tableroBin: Array[Array[Int]] = Array.ofDim[Int](9, 9)
       // relleno tablero de '111 111 111'
@@ -798,6 +803,7 @@ object sudoku {
       }
 
       def inicializarCasilla(i: Int, j: Int): Unit = {
+
         // me aseguro que la casilla no estaba ya inicializada
         if (tableroBin(i)(j) == 1 ||
           tableroBin(i)(j) == 2 ||
@@ -808,19 +814,19 @@ object sudoku {
           tableroBin(i)(j) == 64 ||
           tableroBin(i)(j) == 128 ||
           tableroBin(i)(j) == 256) {
+          casillasJugador(i)(j) = deByteAInt(tableroBin(i)(j))
           return
         }
 
-        // inicializo un byte con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
+        // inicializo un int con solo un bit a 1, aleatorio entre los bits 0  y 9 menos significativos,
         // significando ...000 000 001 que se quiere colocar un 1 y ...100 000 000 que se quiere colocar un 9
         var mascara = scala.math.pow(2, rand.nextInt(9)).asInstanceOf[Int]
         var valido = false
 
-        var contadorVueltas: Int = 0
         // por algun motivo, a veces no se consigue inicializar el tablero
-        // y se queda en este loop indefinidamente. si pasa, se vuelve a intentar
+        // y se queda en este loop indefinidamente.
+        // si pasa, se vuelve a intentar
         while (!valido) {
-
           if ((tableroBin(i)(j) & mascara) != 0) {
 
             // distinto de 0, el numero esta disponible
@@ -836,12 +842,9 @@ object sudoku {
             // el numero de la mascara no esta disponible
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
-              contadorVueltas += 1
-              if (contadorVueltas > 2) {
-                //imprimirTablero()
-                //return
-                println("imprimiendo tablero justo antes de volver a intentarlo")
-                imprimirTableroJugador(tableroBin)
+              if (tableroBin(i)(j) == 0) {
+
+                // algo ha salido mal y hay que empezar de 0
                 inicializarTablero(tableroBin)
               }
             } else { // es par, roto hacia la derecha en 1
@@ -860,7 +863,6 @@ object sudoku {
       // sector 1
       for (i <- 0 until 3) {
         for (j <- 0 until 3) {
-          println(s"inicializando casilla (${i}, ${j})")
           inicializarCasilla(i, j)
         }
       }
