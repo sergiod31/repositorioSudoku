@@ -846,6 +846,11 @@ object sudoku {
               if (tableroBin(i)(j) == 0) {
 
                 // algo ha salido mal y hay que empezar de 0
+                println(s"CASCO EN (${i},${j}), tableroBin: ${tableroBin(i)(j)}")
+                imprimirTableroJugador(tablero)
+                imprimirTableroJugador(tableroBin)
+
+
                 inicializarTablero(tableroBin)
               }
             } else { // es par, roto hacia la derecha en 1
@@ -884,7 +889,7 @@ object sudoku {
 
       // inicializo el resto de las casillas. lo normal es que alrededor de 20 ciclos queden vacios
       for (_ <- 0 until 54) {
-        val sig:Array[Int] = obtenerSiguienteCasilla()
+        val sig: Array[Int] = obtenerSiguienteCasilla()
         inicializarCasilla(sig(0), sig(1))
       }
       tablero
