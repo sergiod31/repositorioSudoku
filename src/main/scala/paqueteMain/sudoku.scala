@@ -814,7 +814,7 @@ object sudoku {
           tableroBin(i)(j) == 64 ||
           tableroBin(i)(j) == 128 ||
           tableroBin(i)(j) == 256) {
-          casillasJugador(i)(j) = deByteAInt(tableroBin(i)(j))
+          tablero(i)(j) = deByteAInt(tableroBin(i)(j))
           return
         }
 
