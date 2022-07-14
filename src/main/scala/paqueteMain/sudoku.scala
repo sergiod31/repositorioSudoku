@@ -884,7 +884,7 @@ object sudoku {
 
       // inicializo el resto de las casillas. lo normal es que alrededor de 20 ciclos queden vacios
       for (_ <- 0 until 54) {
-        val sig = obtenerSiguienteCasilla()
+        val sig:Array[Int] = obtenerSiguienteCasilla()
         inicializarCasilla(sig(0), sig(1))
       }
       tablero
@@ -908,7 +908,7 @@ object sudoku {
         }
         mapa += (i * 10 + j -> casilla)
       }
-      // ya tengo que casillas eliminar
+      // ya tengo las casillas a eliminar
 
       mapa.foreach({
         case (_, value) => casillasJugador(value(0))(value(1)) = 0
