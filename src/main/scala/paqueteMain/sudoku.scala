@@ -814,6 +814,7 @@ object sudoku {
           tableroBin(i)(j) == 64 ||
           tableroBin(i)(j) == 128 ||
           tableroBin(i)(j) == 256) {
+          actualizarFilaColumnaYSector(i, j, tableroBin(i)(j), tableroBin)
           tablero(i)(j) = deByteAInt(tableroBin(i)(j))
           return
         }
