@@ -776,26 +776,24 @@ object sudoku {
           contador
         }
 
-        for (i <- tableroBin.indices) {
-          for (j <- tableroBin(i).indices) {
-            val numero: Int = tableroBin(i)(j)
-            var suma = 10
-            if (numero != 1 &&
-              numero != 2 &&
-              numero != 4 &&
-              numero != 8 &&
-              numero != 16 &&
-              numero != 32 &&
-              numero != 64 &&
-              numero != 128 &&
-              numero != 256) {
-              suma = obtenerSumaBits(numero)
+        for (i <- tableroBin.indices; j <- tableroBin(i).indices) {
+          val numero: Int = tableroBin(i)(j)
+          var suma = 10
+          if (numero != 1 &&
+            numero != 2 &&
+            numero != 4 &&
+            numero != 8 &&
+            numero != 16 &&
+            numero != 32 &&
+            numero != 64 &&
+            numero != 128 &&
+            numero != 256) {
+            suma = obtenerSumaBits(numero)
 
-              if (suma < posibilidadesMin) {
-                posibilidadesMin = suma
-                iCasilla = i
-                jCasilla = j
-              }
+            if (suma < posibilidadesMin) {
+              posibilidadesMin = suma
+              iCasilla = i
+              jCasilla = j
             }
           }
         }
@@ -886,7 +884,8 @@ object sudoku {
           inicializarCasilla(i, j)
         }
       }
-
+      ///////
+      ///////
       // inicializo el resto de las casillas. lo normal es que alrededor de 20 ciclos queden vacios
       for (_ <- 0 until 54) {
         val sig: Array[Int] = obtenerSiguienteCasilla()
