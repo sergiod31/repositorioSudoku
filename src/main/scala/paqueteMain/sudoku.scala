@@ -426,7 +426,7 @@ object sudoku {
       println("\n")
       try {
         val tableroTest: Array[Array[Int]] = tablero.inicializarTablero(Array.ofDim[Int](9, 9))
-        // tablero.imprimirTableroJugador(tableroTest)
+        tablero.imprimirTableroJugador(tableroTest)
         if (tablero.comprobarVictoria(tableroTest)) {
           return true
         }
@@ -725,17 +725,16 @@ object sudoku {
       // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
       val sector: Int = getSector(fila, columna)
 
-      for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
-        for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+      for (i <- sector % 3 * 3 to sector % 3 * 3 + 2;
+           j <- sector / 3 * 3 to sector / 3 * 3 + 2) {
 
-          // me salto la casilla objetivo original, toda la fila, la columna y los numeros ya finales
-          if (i != fila && j != columna && ((tablero(i)(j) & num) > 0)) {
-            tablero(i)(j) -= num
+        // me salto la casilla objetivo original, toda la fila, la columna y los numeros ya finales
+        if (i != fila && j != columna) {
+          tablero(i)(j) -= num
 
-            // si al actualizar, un numero secundario colapsa a un numero
-            if (esNumeroFinal(tablero(i)(j))) {
-              actualizarFilaColumnaYSector(i, j, tablero(i)(j), tablero)
-            }
+          // si al actualizar, un numero secundario colapsa a un numero
+          if (esNumeroFinal(tablero(i)(j))) {
+            actualizarFilaColumnaYSector(i, j, tablero(i)(j), tablero)
           }
         }
       }
@@ -746,12 +745,14 @@ object sudoku {
      */
     def inicializarTablero(tablero: Array[Array[Int]]): Array[Array[Int]] = {
 
+      // pongo el tablero a 0 por si no lo estaba
       for (i <- tablero.indices; j <- tablero(i).indices) {
         tablero(i)(j) = 0
       }
 
       val rand = scala.util.Random
       val tableroBin: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+
       // relleno tablero de '111 111 111'
       for (i <- tableroBin.indices) {
         for (j <- tableroBin(i).indices) {
@@ -790,6 +791,7 @@ object sudoku {
             numero != 256) {
             suma = obtenerSumaBits(numero)
 
+
             if (suma < posibilidadesMin) {
               posibilidadesMin = suma
               iCasilla = i
@@ -812,8 +814,8 @@ object sudoku {
           tableroBin(i)(j) == 64 ||
           tableroBin(i)(j) == 128 ||
           tableroBin(i)(j) == 256) {
-          actualizarFilaColumnaYSector(i, j, tableroBin(i)(j), tableroBin)
-          tablero(i)(j) = deByteAInt(tableroBin(i)(j))
+          //actualizarFilaColumnaYSector(i, j, tableroBin(i)(j), tableroBin)
+          //tablero(i)(j) = deByteAInt(tableroBin(i)(j))
           return
         }
 
@@ -842,13 +844,6 @@ object sudoku {
             if (mascara == 1) { // es 000 000 001
               mascara = 256 // recoloco el bit que se iba a perder a la izq del tod0
               if (tableroBin(i)(j) == 0) {
-
-                // algo ha salido mal y hay que empezar de 0
-                println(s"CASCO EN (${i},${j}), tableroBin: ${tableroBin(i)(j)}")
-                imprimirTableroJugador(tablero)
-                imprimirTableroJugador(tableroBin)
-
-
                 inicializarTablero(tableroBin)
               }
             } else { // es par, roto hacia la derecha en 1
@@ -884,12 +879,23 @@ object sudoku {
           inicializarCasilla(i, j)
         }
       }
+
+
       ///////
       ///////
       // inicializo el resto de las casillas. lo normal es que alrededor de 20 ciclos queden vacios
       for (_ <- 0 until 54) {
+
+
         val sig: Array[Int] = obtenerSiguienteCasilla()
-        inicializarCasilla(sig(0), sig(1))
+
+        println(s"sig: (${sig(0)}, ${sig(1)})")
+        imprimirTableroJugador(tableroBin)
+        if (sig(0) != 0 || sig(1) != 0) {
+
+          // si sig(0) y sig(1) == 0, significa que no hay donde colocar mas numeros
+          inicializarCasilla(sig(0), sig(1))
+        }
       }
       tablero
     }
