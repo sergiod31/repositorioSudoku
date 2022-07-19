@@ -3,6 +3,8 @@ package paqueteMain
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.mutable
+
 
 object sudoku {
 
@@ -13,10 +15,162 @@ object sudoku {
       .appName("prueba")
       .getOrCreate();
 
-    var tablero = new Tablero
+    val tablero = new Tablero
+    val dificultadMaxima = 75
 
-    tablero.inicializarTablero()
-    tablero.imprimirTablero(tablero.traducirTablero(tablero.casillas))
+    def jugar(): Unit = {
+
+      tablero.inicializarTablero(tablero.casillasJugador)
+
+      println("")
+      println("")
+      println("")
+      println("     ░██████╗██╗░░░██╗██████╗░░█████╗░██╗░░██╗██╗░░░██╗")
+      println("     ██╔════╝██║░░░██║██╔══██╗██╔══██╗██║░██╔╝██║░░░██║")
+      println("     ╚█████╗░██║░░░██║██║░░██║██║░░██║█████═╝░██║░░░██║")
+      println("     ░╚═══██╗██║░░░██║██║░░██║██║░░██║██╔═██╗░██║░░░██║")
+      println("     ██████╔╝╚██████╔╝██████╔╝╚█████╔╝██║░╚██╗╚██████╔╝")
+      println("     ╚═════╝░░╚═════╝░╚═════╝░░╚════╝░╚═╝░░╚═╝░╚═════╝░")
+      println("")
+      println("")
+      println("")
+
+      while (nuevaPartida()) {
+        println("Nueva partida!")
+      }
+
+
+      def pedirDificultad(): Int = {
+        //
+        // TESTEADO: funciona perfectamente, no tocar
+        //
+        // miro que la dificultad elegida sea un numero
+        // y sea entre 1 y ${dificultadMaxima}
+
+        print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+        var entradaCorrecta = false
+        var dificultad = -1
+        while (!entradaCorrecta) {
+          entradaCorrecta = true
+          val entradaChars: Array[Char] = scala.io.StdIn.readLine().toCharArray
+          if (entradaChars.length > 2 ||
+            entradaChars.length <= 0) {
+            entradaCorrecta = false
+            println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+            print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+          } else {
+            // ha introducido 1 ó 2 caracteres
+            for (ite <- entradaChars.indices) {
+              if (entradaChars(ite) < 48 || entradaChars(ite) > 57) {
+                entradaCorrecta = false
+              }
+            }
+            if (entradaCorrecta) {
+              // ha introducido 1 o 2 digitos numericos
+              // los paso a numero
+              if (entradaChars.length == 1) {
+                dificultad = entradaChars(0).toInt - 48
+              } else {
+                // supongo entradaChars.length como == 2
+                dificultad = (entradaChars(0).toInt - 48) * 10 + (entradaChars(1).toInt - 48)
+                if (dificultad > dificultadMaxima) {
+                  entradaCorrecta = false
+                  println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+                  print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+                }
+              }
+            } else {
+              println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
+              print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+            }
+          }
+        }
+        dificultad
+      }
+
+      def pedirFilaColumnaNum(): Array[Int] = {
+        val casilla: Array[Int] = Array.ofDim[Int](3)
+
+        var entradaCorrecta = false
+        while (!entradaCorrecta) {
+          entradaCorrecta = true
+          print("Fila: ")
+          val fila = scala.io.StdIn.readLine().toCharArray
+          print("Columna: ")
+          val columna = scala.io.StdIn.readLine().toCharArray
+          print("Número: ")
+          val num = scala.io.StdIn.readLine().toCharArray
+
+          if (fila.length != 1 || columna.length != 1 || num.length != 1) {
+            entradaCorrecta = false
+          } else {
+            if (fila(0) <= 48 || fila(0) > 57 ||
+              columna(0) <= 48 || columna(0) > 57 ||
+              num(0) <= 48 || num(0) > 57) {
+              entradaCorrecta = false
+            }
+          }
+          casilla(0) = fila(0).toInt - 48 - 1
+          casilla(1) = columna(0).toInt - 48 - 1
+          casilla(2) = num(0).toInt - 48
+        }
+        casilla
+      }
+
+      def pedirNuevaPartida(): Boolean = {
+        println("¿Nueva partida (Y/N)?")
+        val respuesta: Array[Char] = scala.io.StdIn.readLine().toCharArray
+        if (respuesta(0) != 'Y' && respuesta(0) != 'y' &&
+          respuesta(0) != 'N' && respuesta(0) != 'n') {
+          // input erroneo
+          return pedirNuevaPartida()
+        }
+        if (respuesta(0) == 'Y' ||
+          respuesta(0) == 'y') {
+          return true
+        }
+        false
+      }
+
+      // si al acabar quiere volver a jugar, retorna true, si no, false
+      def nuevaPartida(): Boolean = {
+
+        // pido dificultad
+        var dificultad = pedirDificultad()
+
+        // inicializo tableros
+        // tablero.inicializarTableroJugador(dificultad)
+        // tablero.imprimirTableroJugador(tablero.casillasJugador)
+
+        // mientras la partida continue:
+        while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
+
+          // pido (i, j)
+          var casilla: Array[Int] = pedirFilaColumnaNum()
+
+          // intento colocar el numero pedido
+          while (!tablero.colocarNumero(tablero.casillasJugador, tablero.casillasJugadorBin, casilla(0), casilla(1), casilla(2))) {
+            println("No se puede colocar ese número, intente con otro o en otra casilla")
+            casilla = pedirFilaColumnaNum()
+          }
+
+          // he colocado un nuevo numero
+          // tablero.imprimirTableroJugador(tablero.casillasJugador)
+
+          // compruebo ha llegado a un callejon sin salida
+          if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
+
+            // ha perdido
+            println("No se puede continuar")
+            println("")
+            return pedirNuevaPartida()
+          }
+        }
+        //
+        pedirNuevaPartida()
+      }
+    }
+
 
   }
 
@@ -31,12 +185,19 @@ object sudoku {
     //   2  │ 6  │ 7  │ 8  │
     //      └────┴────┴────┘
     //
+    //
+    val dimension: Int = 9
+    //
     //  casillas solucion
-    val casillas: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    val casillas: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
     //
     //  casillas para el jugador
-    val casillasJugador: Array[Array[Int]] = Array.ofDim[Int](9, 9)
+    val casillasJugador: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
     //
+    // casillas que comprueban si se puede seguir jugando
+    var casillasJugadorBin: Array[Array[Int]] = Array.ofDim[Int](dimension, dimension)
+    //
+
 
     def deByteAInt(num: Int): Int = {
       //  000 100 000 -> 6
@@ -82,9 +243,48 @@ object sudoku {
     }
 
     //
-    def comprobarVictoria(): Boolean = {
-      for (i <- 0 until 9; j <- 0 until 9) {
-        if (casillasJugador(i)(j) != casillas(i)(j)) {
+    def comprobarVictoria(tablero: Array[Array[Int]]): Boolean = {
+      // busco horizontalmente
+      for (i <- 0 until 9) {
+        val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
+        for (j <- 0 until 9) {
+          if (tablero(i)(j) == 0) {
+            return false
+          }
+          mapa += (tablero(i)(j) -> j)
+        }
+        // si hay menos de 9 elementos, es que hay alguno repetido
+        if (mapa.size < 9) {
+          return false
+        }
+      }
+      // busco verticalmente
+      for (j <- 0 until 9) {
+        val mapa: mutable.HashMap[Int, Int] = mutable.HashMap()
+        for (i <- 0 until 9) {
+          if (tablero(i)(j) == 0) {
+            return false
+          }
+          mapa += (tablero(i)(j) -> i)
+        }
+        // si hay menos de 9 elementos, es que hay alguno repetido
+        if (mapa.size < 9) {
+          return false
+        }
+      }
+
+      // busco en cada sector
+      for (sector <- 0 until 9) {
+        val mapa: mutable.HashMap[Int, (Int, Int)] = mutable.HashMap()
+        for (i <- (sector / 3 * 3) until (sector / 3 * 3) + 3) {
+          for (j <- (sector % 3 * 3) until (sector % 3 * 3 + 3)) {
+            if (tablero(i)(j) == 0) {
+              return false
+            }
+            mapa += (tablero(i)(j) -> (i, j))
+          }
+        }
+        if (mapa.size < 9) {
           return false
         }
       }
@@ -92,8 +292,102 @@ object sudoku {
     }
 
     // obtiene, de una fila + columna, a que sector pertenece
+    // TODO: esto esta mal, para estar bien deberia de ser ((fila / 3) * 3) + (columna / 3), pero si lo pongo bien, casca :/
     def getSector(fila: Int, columna: Int): Int = {
       (fila / 3) + ((columna / 3) * 3)
+    }
+
+    // false -> derrota
+    def comprobarDerrota(tablero: Array[Array[Int]]): Boolean = {
+      for (i <- tablero.indices; j <- tablero(i).indices) {
+        if (tablero(i)(j) == 0) {
+          return false
+        }
+      }
+      true
+    }
+
+    // la tabla que se le pasa es "bin"
+    def comprobarNumeroValido(tablaBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+      if ((tablaBin(fila)(columna) & deIntAByte(num)) > 0) {
+        return true
+      }
+      false
+    }
+
+    // comprueba si se puede colocar el numero, actualiza el tablero en contador binario y actualiza el tablero
+    def colocarNumero(tablero: Array[Array[Int]], tableroBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+      if (!comprobarNumeroValido(tableroBin, fila, columna, num)) {
+        return false
+      }
+
+      // se puede colocar
+      actualizarFilaColumnaYSector(fila, columna, num)
+
+      tablero(fila)(columna) = num
+      true
+    }
+
+    def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int): Unit = {
+
+      def esNumeroFinal(numero: Int): Boolean = {
+        if (numero == 1 ||
+          numero == 2 ||
+          numero == 4 ||
+          numero == 8 ||
+          numero == 16 ||
+          numero == 32 ||
+          numero == 64 ||
+          numero == 128 ||
+          numero == 256) {
+          return true
+        }
+        false
+      }
+
+
+      // actualizo la fila
+      for (j <- casillas(fila).indices) { // recorro la fila pedida
+        // me salto la casilla objetivo original
+        if (j != columna && ((casillas(fila)(j) & num) > 0)) {
+          casillas(fila)(j) -= num
+
+          // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+          if (esNumeroFinal(casillas(fila)(j))) {
+            actualizarFilaColumnaYSector(fila, j, casillas(fila)(j))
+          }
+        }
+      }
+      // actualizo la columna
+      for (i <- casillas.indices) { // recorro la columna pedida
+        // me salto la casilla objetivo original
+        if (i != fila && ((casillas(i)(columna) & num) > 0)) {
+          casillas(i)(columna) -= num
+
+          // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+          if (esNumeroFinal(casillas(i)(columna))) {
+            actualizarFilaColumnaYSector(i, columna, casillas(i)(columna))
+          }
+        }
+      }
+
+      // actualizo el sector
+      // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
+      val sector: Int = getSector(fila, columna)
+
+      for (i <- sector % 3 * 3 to sector % 3 * 3 + 2;
+           j <- sector / 3 * 3 to sector / 3 * 3 + 2) {
+
+        // me salto la casilla objetivo original, toda la fila, la columna y los numeros ya finales
+        if (i != fila && j != columna && (!esNumeroFinal(casillas(i)(j)))) { // && ((casillas(i)(j) & num) > 0)
+          casillas(i)(j) -= num
+
+          // si al actualizar, un numero secundario colapsa a 1, 2, 3...
+          if (esNumeroFinal(casillas(i)(j))) {
+            actualizarFilaColumnaYSector(i, j, casillas(i)(j))
+          }
+        }
+      }
     }
 
     /*
@@ -109,48 +403,6 @@ object sudoku {
         }
       }
 
-      def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int): Unit = {
-        // actualizo la fila
-        for (j <- casillas(fila).indices) { // recorro la fila pedida
-          // me salto la casilla objetivo original
-          if (j != columna && ((casillas(fila)(j) & num) > 0)) {
-            casillas(fila)(j) -= num
-
-            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-            if (esNumeroFinal(casillas(fila)(j))) {
-              actualizarFilaColumnaYSector(fila, j, casillas(fila)(j))
-            }
-          }
-        }
-        // actualizo la columna
-        for (i <- casillas.indices) { // recorro la columna pedida
-          // me salto la casilla objetivo original
-          if (i != fila && ((casillas(i)(columna) & num) > 0)) {
-            casillas(i)(columna) -= num
-
-            // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-            if (esNumeroFinal(casillas(i)(columna))) {
-              actualizarFilaColumnaYSector(i, columna, casillas(i)(columna))
-            }
-          }
-        }
-
-        // actualizo el sector
-        // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
-        val sector: Int = getSector(fila, columna)
-        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
-          for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
-            if (i != fila && j != columna && ((casillas(i)(j) & num) > 0)) {
-              casillas(i)(j) -= num
-
-              // si al actualizar, un numero secundario colapsa a 1, 2, 3...
-              if (esNumeroFinal(casillas(i)(j))) {
-                actualizarFilaColumnaYSector(i, j, casillas(i)(j))
-              }
-            }
-          }
-        }
-      }
 
       def esNumeroFinal(numero: Int): Boolean = {
         if (numero == 1 ||
@@ -322,6 +574,4 @@ object sudoku {
       println("└────┴────┴────┴────┴────┴────┴────┴────┴────┘")
     }
   }
-
-
 }
