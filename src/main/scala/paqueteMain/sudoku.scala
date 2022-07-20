@@ -44,7 +44,7 @@ object sudoku {
       println("")
       println("")
 
-      while (nuevaPartida()) {
+      while (nuevaPartida()) { // mientras al acabar, el usuario quiera volver a jugar
         println("nueva partida!")
       }
     }
@@ -628,23 +628,23 @@ object sudoku {
       println("")
       println("    1    2    3    4    5    6    7    8    9")
       println("  ┌────┬────┬────┬────┬────┬────┬────┬────┬────┐  ")
-      println(s"1 │ ${tablero(0)(0)}  │ ${tablero(0)(1)}  │ ${tablero(0)(2)}  │ ${tablero(0)(3)}  │ ${tablero(0)(4)}  │ ${tablero(0)(5)}  │  ${tablero(0)(6)} │ ${tablero(0)(7)}  │ ${tablero(0)(8)}  │")
+      println(s"1 │ ${tableroAux(0)(0)}  │ ${tableroAux(0)(1)}  │ ${tableroAux(0)(2)}  │ ${tableroAux(0)(3)}  │ ${tableroAux(0)(4)}  │ ${tableroAux(0)(5)}  │  ${tableroAux(0)(6)} │ ${tableroAux(0)(7)}  │ ${tableroAux(0)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"2 │ ${tablero(1)(0)}  │ ${tablero(1)(1)}  │ ${tablero(1)(2)}  │ ${tablero(1)(3)}  │ ${tablero(1)(4)}  │ ${tablero(1)(5)}  │  ${tablero(1)(6)} │ ${tablero(1)(7)}  │ ${tablero(1)(8)}  │")
+      println(s"2 │ ${tableroAux(1)(0)}  │ ${tableroAux(1)(1)}  │ ${tableroAux(1)(2)}  │ ${tableroAux(1)(3)}  │ ${tableroAux(1)(4)}  │ ${tableroAux(1)(5)}  │  ${tableroAux(1)(6)} │ ${tableroAux(1)(7)}  │ ${tableroAux(1)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"3 │ ${tablero(2)(0)}  │ ${tablero(2)(1)}  │ ${tablero(2)(2)}  │ ${tablero(2)(3)}  │ ${tablero(2)(4)}  │ ${tablero(2)(5)}  │  ${tablero(2)(6)} │ ${tablero(2)(7)}  │ ${tablero(2)(8)}  │")
+      println(s"3 │ ${tableroAux(2)(0)}  │ ${tableroAux(2)(1)}  │ ${tableroAux(2)(2)}  │ ${tableroAux(2)(3)}  │ ${tableroAux(2)(4)}  │ ${tableroAux(2)(5)}  │  ${tableroAux(2)(6)} │ ${tableroAux(2)(7)}  │ ${tableroAux(2)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"4 │ ${tablero(3)(0)}  │ ${tablero(3)(1)}  │ ${tablero(3)(2)}  │ ${tablero(3)(3)}  │ ${tablero(3)(4)}  │ ${tablero(3)(5)}  │  ${tablero(3)(6)} │ ${tablero(3)(7)}  │ ${tablero(3)(8)}  │")
+      println(s"4 │ ${tableroAux(3)(0)}  │ ${tableroAux(3)(1)}  │ ${tableroAux(3)(2)}  │ ${tableroAux(3)(3)}  │ ${tableroAux(3)(4)}  │ ${tableroAux(3)(5)}  │  ${tableroAux(3)(6)} │ ${tableroAux(3)(7)}  │ ${tableroAux(3)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"5 │ ${tablero(4)(0)}  │ ${tablero(4)(1)}  │ ${tablero(4)(2)}  │ ${tablero(4)(3)}  │ ${tablero(4)(4)}  │ ${tablero(4)(5)}  │  ${tablero(4)(6)} │ ${tablero(4)(7)}  │ ${tablero(4)(8)}  │")
+      println(s"5 │ ${tableroAux(4)(0)}  │ ${tableroAux(4)(1)}  │ ${tableroAux(4)(2)}  │ ${tableroAux(4)(3)}  │ ${tableroAux(4)(4)}  │ ${tableroAux(4)(5)}  │  ${tableroAux(4)(6)} │ ${tableroAux(4)(7)}  │ ${tableroAux(4)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"6 │ ${tablero(5)(0)}  │ ${tablero(5)(1)}  │ ${tablero(5)(2)}  │ ${tablero(5)(3)}  │ ${tablero(5)(4)}  │ ${tablero(5)(5)}  │  ${tablero(5)(6)} │ ${tablero(5)(7)}  │ ${tablero(5)(8)}  │")
+      println(s"6 │ ${tableroAux(5)(0)}  │ ${tableroAux(5)(1)}  │ ${tableroAux(5)(2)}  │ ${tableroAux(5)(3)}  │ ${tableroAux(5)(4)}  │ ${tableroAux(5)(5)}  │  ${tableroAux(5)(6)} │ ${tableroAux(5)(7)}  │ ${tableroAux(5)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"7 │ ${tablero(6)(0)}  │ ${tablero(6)(1)}  │ ${tablero(6)(2)}  │ ${tablero(6)(3)}  │ ${tablero(6)(4)}  │ ${tablero(6)(5)}  │  ${tablero(6)(6)} │ ${tablero(6)(7)}  │ ${tablero(6)(8)}  │")
+      println(s"7 │ ${tableroAux(6)(0)}  │ ${tableroAux(6)(1)}  │ ${tableroAux(6)(2)}  │ ${tableroAux(6)(3)}  │ ${tableroAux(6)(4)}  │ ${tableroAux(6)(5)}  │  ${tableroAux(6)(6)} │ ${tableroAux(6)(7)}  │ ${tableroAux(6)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"8 │ ${tablero(7)(0)}  │ ${tablero(7)(1)}  │ ${tablero(7)(2)}  │ ${tablero(7)(3)}  │ ${tablero(7)(4)}  │ ${tablero(7)(5)}  │  ${tablero(7)(6)} │ ${tablero(7)(7)}  │ ${tablero(7)(8)}  │")
+      println(s"8 │ ${tableroAux(7)(0)}  │ ${tableroAux(7)(1)}  │ ${tableroAux(7)(2)}  │ ${tableroAux(7)(3)}  │ ${tableroAux(7)(4)}  │ ${tableroAux(7)(5)}  │  ${tableroAux(7)(6)} │ ${tableroAux(7)(7)}  │ ${tableroAux(7)(8)}  │")
       println("  ├────┼────┼────┼────┼────┼────┼────┼────┼────┤")
-      println(s"9 │ ${tablero(8)(0)}  │ ${tablero(8)(1)}  │ ${tablero(8)(2)}  │ ${tablero(8)(3)}  │ ${tablero(8)(4)}  │ ${tablero(8)(5)}  │  ${tablero(8)(6)} │ ${tablero(8)(7)}  │ ${tablero(8)(8)}  │")
+      println(s"9 │ ${tableroAux(8)(0)}  │ ${tableroAux(8)(1)}  │ ${tableroAux(8)(2)}  │ ${tableroAux(8)(3)}  │ ${tableroAux(8)(4)}  │ ${tableroAux(8)(5)}  │  ${tableroAux(8)(6)} │ ${tableroAux(8)(7)}  │ ${tableroAux(8)(8)}  │")
       println("  └────┴────┴────┴────┴────┴────┴────┴────┴────┘")
     }
   }
