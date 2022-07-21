@@ -21,16 +21,6 @@ object sudoku {
 
     def jugar(): Unit = {
 
-      // lo primero que hago es crear el tablero (casillas)
-      tablero.inicializarTablero()
-
-      tablero.imprimirTablero(tablero.casillas)
-      tablero.imprimirTablero(tablero.casillasJugador)
-      println(s"(1, 4) -> ${tablero.casillasJugador(0)(3)})")
-      println(s"(3, 4) -> ${tablero.casillasJugador(2)(3)})")
-      println(s"(1, 9) -> ${tablero.casillasJugador(0)(8)})")
-
-
       println("")
       println("")
       println("")
@@ -144,6 +134,8 @@ object sudoku {
     // si al acabar quiere volver a jugar, retorna true, si no, false
     def nuevaPartida(): Boolean = {
 
+      tablero.inicializarTablero()
+
       // pido dificultad
       val dificultad = pedirDificultad()
 
@@ -164,7 +156,7 @@ object sudoku {
         }
 
         // he colocado un nuevo numero
-        // tablero.imprimirTableroJugador(tablero.casillasJugador)
+        tablero.imprimirTableroJugador(tablero.casillasJugador)
 
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
@@ -312,6 +304,7 @@ object sudoku {
 
     // la tabla que se le pasa es "bin"
     def comprobarNumeroValido(tablaBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+      println(s"comprobarNumeroValido - (${fila}, ${columna}) -> ${tablaBin(fila)(columna)}")
       if ((tablaBin(fila)(columna) & deIntAByte(num)) > 0) {
         return true
       }
@@ -321,23 +314,57 @@ object sudoku {
 
     // comprueba si se puede colocar el numero, actualiza el tablero en contador binario y actualiza el tablero
     def colocarNumero(tablero: Array[Array[Int]], tableroBin: Array[Array[Int]], fila: Int, columna: Int, num: Int): Boolean = {
+
+      def actualizarFilaColumnaYSector(fila: Int, columna: Int, num: Int, tableroBin: Array[Array[Int]]): Unit = {
+        val sector = getSectorBien(fila, columna)
+
+        // actualizo fila
+        for (j <- tableroBin.indices) {
+          if ((tableroBin(fila)(j) & num) > 0) { // es una casilla con esa posibilidad de num
+            tableroBin(fila)(j) -= deIntAByte(num)
+          }
+        }
+
+        // actualizo columna
+        for (i <- tableroBin(fila).indices) {
+          if ((tableroBin(i)(columna) & num) > 0) { // es una casilla con esa posibilidad de num
+            tableroBin(i)(columna) -= deIntAByte(num)
+          }
+        }
+
+        // actualizo sector
+        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2;
+             j <- sector / 3 * 3 to sector / 3 * 3 + 2) {
+          if ((tableroBin(i)(columna) & num) > 0) { // es una casilla con esa posibilidad de num
+            tableroBin(i)(j) -= deIntAByte(num)
+          }
+        }
+      }
+
+
       if (!comprobarNumeroValido(tableroBin, fila, columna, num)) {
+        // TODO: borrar
+        println("numero no valido")
+        println(s"se intenta colocar ${num} en (${fila},${columna})")
         return false
       }
 
       // se puede colocar
-      //actualizarFilaColumnaYSector(fila, columna, num, tableroBin)
-
+      actualizarFilaColumnaYSector(fila, columna, num, tableroBin)
       tablero(fila)(columna) = num
       true
     }
 
 
     // obtiene, de una fila + columna, a que sector pertenece
-    // TODO: en realidad deberia ser  ((fila / 3) * 3) + (columna / 3), pero bien puesto casca porque patata
+    // TODO: en realidad deberia ser  ((fila / 3) * 3) + (columna / 3), pero bien puesto, todo casca porque patata :/
     def getSector(fila: Int, columna: Int): Int = {
       (fila / 3) + ((columna / 3) * 3)
       // ((fila / 3) * 3) + (columna / 3)
+    }
+
+    def getSectorBien(fila: Int, columna: Int): Int = {
+      ((fila / 3) * 3) + (columna / 3)
     }
 
     /*
@@ -390,6 +417,7 @@ object sudoku {
         // actualizo el sector
         // con cuidado de no actualizar las casillas ya actualizadas por "filas" y por "columnas"
         val sector: Int = getSector(fila, columna)
+
         for (i <- sector % 3 * 3 to sector % 3 * 3 + 2) { // fila del sector
           for (j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
             if (i != fila && j != columna && ((casillas(i)(j) & num) > 0)) {
@@ -578,7 +606,7 @@ object sudoku {
       // actualizo casillasJugadorBin segun casillasJugador
       for (i <- casillasJugador.indices; j <- casillasJugador(i).indices) {
         if (casillasJugador(i)(j) != 0) {
-          //actualizarFilaColumnaYSector(i, j, deIntAByte(casillasJugador(i)(j)), casillasJugadorBin)
+          actualizarFilaColumnaYSector(i, j, deIntAByte(casillasJugador(i)(j)), casillasJugadorBin)
         }
       }
     }
