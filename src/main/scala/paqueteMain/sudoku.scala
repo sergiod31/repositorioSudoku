@@ -9,11 +9,7 @@ import scala.collection.mutable
 object sudoku {
 
   def main(args: Array[String]): Unit = {
-    Logger.getLogger("org").setLevel(Level.ERROR)
-    val spark: SparkSession = SparkSession.builder()
-      .master("local")
-      .appName("prueba")
-      .getOrCreate();
+    Logger.getLogger("org").setLevel(Level.ERROR);
 
     val tablero = new Tablero
     val dificultadMaxima = 75
@@ -143,6 +139,10 @@ object sudoku {
       tablero.inicializarTableroJugador(dificultad)
       tablero.imprimirTableroJugador(tablero.casillasJugador)
 
+      //
+      tablero.imprimirTableroJugador(tablero.casillasJugadorBin)
+      //
+
       // mientras la partida continue:
       while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
 
@@ -158,6 +158,7 @@ object sudoku {
         // he colocado un nuevo numero
         tablero.imprimirTableroJugador(tablero.casillasJugador)
 
+        /*
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
 
@@ -166,6 +167,8 @@ object sudoku {
           println("")
           return pedirNuevaPartida()
         }
+
+         */
       }
       //
       pedirNuevaPartida()
@@ -295,11 +298,11 @@ object sudoku {
     // false -> derrota
     def comprobarDerrota(tablero: Array[Array[Int]]): Boolean = {
       for (i <- tablero.indices; j <- tablero(i).indices) {
-        if (tablero(i)(j) == 0) {
-          return false
+        if (tablero(i)(j) != 0) {
+          return true
         }
       }
-      true
+      false
     }
 
     // la tabla que se le pasa es "bin"
@@ -575,6 +578,33 @@ object sudoku {
     // lo preparo para jugar quitandole casillas y
     // creando otro tableroBin para controlar si el usuario intenta meter un numero valido o no
     def inicializarTableroJugador(dificultad: Int): Unit = {
+
+      //
+      def actualizarFilaColumnaYSectorBin(fila: Int, columna: Int, num: Int): Unit = {
+        // actualizo columna
+        for (i <- casillasJugadorBin.indices) {
+          if ((casillasJugadorBin(i)(columna) & num) > 0) {
+            casillasJugadorBin(i)(columna) -= num
+          }
+        }
+
+        // actualizo fila
+        for (j <- casillasJugadorBin(fila).indices) {
+          if ((casillasJugadorBin(fila)(j) & num) > 0) {
+            casillasJugadorBin(fila)(j) -= num
+          }
+        }
+
+        // actualizo sector
+        val sector: Int = getSectorBien(fila, columna)
+        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2; // fila del sector
+             j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+          if ((casillasJugadorBin(i)(j) & num) > 0) { // si esa casilla contiene el numero a eliminar
+            casillasJugadorBin(i)(j) -= num
+          }
+        }
+      }
+
       casillasJugador = traducirTablero(casillas)
 
       val rand = scala.util.Random
@@ -606,7 +636,8 @@ object sudoku {
       // actualizo casillasJugadorBin segun casillasJugador
       for (i <- casillasJugador.indices; j <- casillasJugador(i).indices) {
         if (casillasJugador(i)(j) != 0) {
-          actualizarFilaColumnaYSector(i, j, deIntAByte(casillasJugador(i)(j)), casillasJugadorBin)
+          actualizarFilaColumnaYSectorBin(i, j, deIntAByte(casillasJugador(i)(j)))
+          casillasJugadorBin(i)(j) = 0
         }
       }
     }
