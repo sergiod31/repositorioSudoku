@@ -139,10 +139,6 @@ object sudoku {
       tablero.inicializarTableroJugador(dificultad)
       tablero.imprimirTableroJugador(tablero.casillasJugador)
 
-      //
-      tablero.imprimirTableroJugador(tablero.casillasJugadorBin)
-      //
-
       // mientras la partida continue:
       while (!tablero.comprobarVictoria(tablero.casillasJugador)) {
 
@@ -158,7 +154,7 @@ object sudoku {
         // he colocado un nuevo numero
         tablero.imprimirTableroJugador(tablero.casillasJugador)
 
-        /*
+
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
 
@@ -168,7 +164,7 @@ object sudoku {
           return pedirNuevaPartida()
         }
 
-         */
+
       }
       //
       pedirNuevaPartida()
@@ -581,9 +577,10 @@ object sudoku {
 
       //
       def actualizarFilaColumnaYSectorBin(fila: Int, columna: Int, num: Int): Unit = {
+
         // actualizo columna
         for (i <- casillasJugadorBin.indices) {
-          if ((casillasJugadorBin(i)(columna) & num) > 0) {
+          if ((casillasJugadorBin(i)(columna) & num) > 0) { // si contiene el num
             casillasJugadorBin(i)(columna) -= num
           }
         }
@@ -597,8 +594,8 @@ object sudoku {
 
         // actualizo sector
         val sector: Int = getSectorBien(fila, columna)
-        for (i <- sector % 3 * 3 to sector % 3 * 3 + 2; // fila del sector
-             j <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
+        for (j <- sector % 3 * 3 to sector % 3 * 3 + 2; // fila del sector
+             i <- sector / 3 * 3 to sector / 3 * 3 + 2) { // columna del sector
           if ((casillasJugadorBin(i)(j) & num) > 0) { // si esa casilla contiene el numero a eliminar
             casillasJugadorBin(i)(j) -= num
           }
