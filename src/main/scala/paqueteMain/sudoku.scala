@@ -76,7 +76,7 @@ object sudoku {
             }
           } else {
             println(s"Introduzca un número del 1 al ${dificultadMaxima} por favor")
-            print(s"     Elija dificultad (1 - ${dificultadMaxima}): ")
+            print(s"\n     Elija dificultad (1 - ${dificultadMaxima}): ")
           }
         }
       }
@@ -157,15 +157,14 @@ object sudoku {
 
         // compruebo ha llegado a un callejon sin salida
         if (!tablero.comprobarDerrota(tablero.casillasJugadorBin)) {
-
+          tablero.imprimirTablero(tablero.casillasJugadorBin)
           // ha perdido
           println("No se puede continuar")
           println("")
           return pedirNuevaPartida()
         }
-
-
       }
+      println("\t\tVICTORIA!!!\n")
       //
       pedirNuevaPartida()
     }
